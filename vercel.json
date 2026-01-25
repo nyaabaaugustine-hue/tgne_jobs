@@ -1,15 +1,14 @@
 {
   "version": 2,
-  "framework": "laravel",
   "functions": {
-    "public/index.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.6.0"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/public/index.php"
+      "src": "/(.*)",
+      "dest": "/api/index.php"
     }
   ]
 }
