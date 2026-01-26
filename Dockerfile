@@ -25,8 +25,12 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . /var/www/html
 
+# Debug: Check directory contents before composer install
+RUN ls -la /var/www/html/
+RUN ls -la /var/www/html/composer.*
+
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --verbose || echo "Composer install failed"
+RUN cd /var/www/html && composer install --no-dev --optimize-autoloader --ignore-platform-reqs --verbose || echo "Composer install failed"
 RUN ls -la /var/www/html/vendor/autoload.php || echo "vendor/autoload.php not found"
 
 # Set proper permissions
