@@ -26,17 +26,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy platform directory first (required for path repositories)
-COPY platform ./platform
-
-# Copy composer files
-COPY composer.json composer.lock .env.example /var/www/html/
+# Copy all application files first
+COPY . /var/www/html/
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-# Copy application files
-COPY . /var/www/html
 
 # Copy custom .env file for production
 COPY .env.production .env
