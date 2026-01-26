@@ -15,9 +15,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml tokenizer \
-    && docker-php-ext-install zip \
-    && docker-php-ext-install calendar
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml zip calendar
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
