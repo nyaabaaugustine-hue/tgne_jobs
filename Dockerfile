@@ -66,7 +66,10 @@ RUN php artisan migrate --force
 # Link storage
 RUN php artisan storage:link
 
-# Clear caches AFTER migrations (critical for Botble)
+# Publish assets BEFORE clearing caches (critical for Botble)
+RUN php artisan cms:publish:assets
+
+# Clear caches AFTER migrations and asset publishing (critical for Botble)
 RUN php artisan config:clear \
  && php artisan route:clear \
  && php artisan view:clear \
