@@ -2,27 +2,19 @@
 
 namespace Database\Seeders;
 
-use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Supports\BaseSeeder;
-use Botble\Location\Models\City;
-use Botble\Location\Models\Country;
-use Botble\Location\Models\State;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class LocationSeeder extends BaseSeeder
 {
     public function run(): void
     {
-        City::query()->truncate();
-        State::query()->truncate();
-        Country::query()->truncate();
+        // Truncate existing location tables
+        DB::table('cities')->truncate();
+        DB::table('states')->truncate();
+        DB::table('countries')->truncate();
 
-        $this->uploadFiles('locations');
-
-        $now = Carbon::now();
-
+        // Create countries
         $countries = [
             [
                 'id' => 1,
@@ -30,9 +22,9 @@ class LocationSeeder extends BaseSeeder
                 'nationality' => 'French',
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'code' => 'FRA',
-                'created_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 2,
@@ -40,19 +32,19 @@ class LocationSeeder extends BaseSeeder
                 'nationality' => 'English',
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'code' => 'UK',
-                'created_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 3,
                 'name' => 'USA',
-                'nationality' => 'Americans',
+                'nationality' => 'American',
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'code' => 'US',
-                'created_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 4,
@@ -60,9 +52,9 @@ class LocationSeeder extends BaseSeeder
                 'nationality' => 'Dutch',
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'code' => 'HL',
-                'created_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 5,
@@ -70,91 +62,97 @@ class LocationSeeder extends BaseSeeder
                 'nationality' => 'Danish',
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'code' => 'DN',
-                'created_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 6,
                 'name' => 'Germany',
-                'nationality' => 'Danish',
+                'nationality' => 'German',
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'code' => 'DN',
-                'created_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ];
 
+        DB::table('countries')->insert($countries);
+
+        // Create states
         $states = [
             [
                 'id' => 1,
-                'name' => 'France',
-                'abbreviation' => 'FR',
+                'name' => 'Ile-de-France',
+                'abbreviation' => 'IDF',
                 'country_id' => 1,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 2,
-                'name' => 'England',
-                'abbreviation' => 'EN',
+                'name' => 'Greater London',
+                'abbreviation' => 'GL',
                 'country_id' => 2,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 3,
                 'name' => 'New York',
                 'abbreviation' => 'NY',
-                'country_id' => 1,
+                'country_id' => 3,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 4,
-                'name' => 'Holland',
-                'abbreviation' => 'HL',
+                'name' => 'North Holland',
+                'abbreviation' => 'NH',
                 'country_id' => 4,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 5,
-                'name' => 'Denmark',
-                'abbreviation' => 'DN',
+                'name' => 'Capital Region',
+                'abbreviation' => 'CR',
                 'country_id' => 5,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 6,
-                'name' => 'Germany',
-                'abbreviation' => 'GER',
-                'country_id' => 1,
+                'name' => 'Berlin',
+                'abbreviation' => 'BE',
+                'country_id' => 6,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ];
 
+        DB::table('states')->insert($states);
+
+        // Create cities
         $cities = [
             [
                 'id' => 1,
@@ -164,9 +162,9 @@ class LocationSeeder extends BaseSeeder
                 'record_id' => null,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 2,
@@ -176,9 +174,9 @@ class LocationSeeder extends BaseSeeder
                 'record_id' => null,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 3,
@@ -188,64 +186,87 @@ class LocationSeeder extends BaseSeeder
                 'record_id' => null,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'id' => 4,
-                'name' => 'New York',
-                'state_id' => 4,
-                'country_id' => 4,
-                'record_id' => null,
-                'order' => 0,
-                'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
-                'id' => 5,
                 'name' => 'Copenhagen',
                 'state_id' => 5,
                 'country_id' => 5,
                 'record_id' => null,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'id' => 6,
+                'id' => 5,
                 'name' => 'Berlin',
                 'state_id' => 6,
                 'country_id' => 6,
                 'record_id' => null,
                 'order' => 0,
                 'is_default' => 0,
-                'status' => BaseStatusEnum::PUBLISHED,
-                'created_at' => $now,
-                'updated_at' => $now,
+                'status' => 'published',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ];
 
-        foreach ($countries as $country) {
-            DB::table('countries')->insert($country);
-        }
+        DB::table('cities')->insert($cities);
 
-        foreach ($states as $state) {
-            DB::table('states')->insert(array_merge($state, [
-                'slug' => Str::slug($state['name']),
-            ]));
-        }
+        // Update companies to use these locations
+        DB::table('jb_companies')
+            ->where('id', 1)
+            ->update([
+                'country_id' => 3, // USA
+                'state_id' => 3,   // New York
+                'city_id' => 3     // New York
+            ]);
 
-        foreach ($cities as $city) {
-            $city['image'] = 'locations/location' . $city['id'] . '.png';
+        DB::table('jb_companies')
+            ->where('id', 2)
+            ->update([
+                'country_id' => 2, // England
+                'state_id' => 2,   // Greater London
+                'city_id' => 2     // London
+            ]);
 
-            City::query()->create(array_merge($city, [
-                'slug' => Str::slug($city['name']),
-            ]));
-        }
+        DB::table('jb_companies')
+            ->where('id', 3)
+            ->update([
+                'country_id' => 1, // France
+                'state_id' => 1,   // Ile-de-France
+                'city_id' => 1     // Paris
+            ]);
+
+        DB::table('jb_companies')
+            ->where('id', 4)
+            ->update([
+                'country_id' => 5, // Denmark
+                'state_id' => 5,   // Capital Region
+                'city_id' => 4     // Copenhagen
+            ]);
+
+        DB::table('jb_companies')
+            ->where('id', 5)
+            ->update([
+                'country_id' => 6, // Germany
+                'state_id' => 6,   // Berlin
+                'city_id' => 5     // Berlin
+            ]);
+
+        DB::table('jb_companies')
+            ->where('id', 6)
+            ->update([
+                'country_id' => 4, // Holland
+                'state_id' => 4,   // North Holland
+                'city_id' => 3     // New York (as per reference)
+            ]);
+
+        echo "Location data seeded successfully!\n";
     }
 }

@@ -18,7 +18,7 @@
                                             <a href="{{ $company->url }}">
                                                 @if ($company->logo)
                                                     <div class="image-left">
-                                                        <img alt="{{ $company->name }}" src="{{ $company->logo_thumb }}">
+                                                        <img alt="{{ $company->name }}" src="{{ RvMedia::getImageUrl($company->logo) }}">
                                                     </div>
                                                 @endif
                                                 <div class="text-info-right">
@@ -72,7 +72,7 @@
                                             <a href="{{ $company->url }}">
                                                 @if ($company->logo)
                                                     <div class="image-left">
-                                                        <img alt="{{ $company->name }}" src="{{ $company->logo_thumb }}">
+                                                        <img alt="{{ $company->name }}" src="{{ RvMedia::getImageUrl($company->logo) }}">
                                                     </div>
                                                 @endif
                                                 <div class="text-info-right">
@@ -126,7 +126,7 @@
                                             <a href="{{ $company->url }}">
                                                 @if ($company->logo)
                                                     <div class="image-left">
-                                                        <img alt="{{ $company->name }}" src="{{ $company->logo_thumb }}">
+                                                        <img alt="{{ $company->name }}" src="{{ RvMedia::getImageUrl($company->logo) }}">
                                                     </div>
                                                 @endif
                                                 <div class="text-info-right">

@@ -39,11 +39,8 @@ class Database
             try {
                 Process::fromShellCommandline($sql)->mustRun();
             } catch (Throwable) {
-                if (function_exists('system')) {
-                    system($sql);
-                } else {
-                    throw new Exception($exception->getMessage());
-                }
+                // Removed dangerous system() call to prevent RCE
+                throw new Exception($exception->getMessage());
             }
         }
     }

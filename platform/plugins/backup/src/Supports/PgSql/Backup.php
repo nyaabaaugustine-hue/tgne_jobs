@@ -29,12 +29,9 @@ class Backup
 
         try {
             Process::fromShellCommandline($sql)->mustRun();
-        } catch (Throwable) {
-            try {
-                system($sql);
-            } catch (Throwable $exception) {
-                throw $exception;
-            }
+        } catch (Throwable $throwable) {
+            // Removed dangerous system() call to prevent RCE
+            throw $throwable;
         }
 
         return $filePath;

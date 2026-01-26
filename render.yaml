@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: tgne_jobs
+    env: docker
+    region: oregon
+    plan: free
+    healthCheckPath: /

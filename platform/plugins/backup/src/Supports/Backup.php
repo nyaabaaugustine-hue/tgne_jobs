@@ -157,11 +157,8 @@ class Backup
             BaseHelper::logError($exception);
 
             try {
-                if (function_exists('system')) {
-                    system($sql);
-                } else {
-                    $this->processMySqlDumpPHP($path, $config);
-                }
+                // Removed dangerous system() call to prevent RCE
+                $this->processMySqlDumpPHP($path, $config);
             } catch (Throwable $exception) {
                 $this->processMySqlDumpPHP($path, $config);
 
