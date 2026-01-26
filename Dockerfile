@@ -10,7 +10,12 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libsqlite3-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml zip calendar \
+    libzip-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install calendar \
+    && php -m | grep -i zip \
+    && php -m | grep -i calendar \
     && php -m | grep -i tokenizer || echo "Tokenizer extension is built-in"
 
 # Enable Apache mod_rewrite
