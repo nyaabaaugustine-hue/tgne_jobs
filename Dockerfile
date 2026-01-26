@@ -60,17 +60,17 @@ RUN composer install \
     --no-interaction \
     --prefer-dist
 
-# Clear caches
-RUN php artisan config:clear \
- && php artisan route:clear \
- && php artisan view:clear \
- && php artisan cache:clear
-
-# Run migrations
+# Run migrations FIRST (critical for Botble)
 RUN php artisan migrate --force
 
 # Link storage
 RUN php artisan storage:link
+
+# Clear caches AFTER migrations (critical for Botble)
+RUN php artisan config:clear \
+ && php artisan route:clear \
+ && php artisan view:clear \
+ && php artisan cache:clear
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
