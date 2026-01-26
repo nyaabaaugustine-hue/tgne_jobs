@@ -30,20 +30,27 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache mods
+RUN a2enmod rewrite headers
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
-COPY . .
+# Copy only composer files first for caching
+COPY composer.json composer.lock .env.production ./
 
-# Copy production .env
-COPY .env.production .env
+# Install PHP dependencies
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --prefer-dist
+
+# Copy rest of the app
+COPY . .
 
 # Ensure directories exist and are writable
 RUN mkdir -p database \
@@ -53,31 +60,10 @@ RUN mkdir -p database \
  && chown -R www-data:www-data database storage bootstrap/cache \
  && chmod -R 775 database storage bootstrap/cache
 
-# Install PHP dependencies
-RUN composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction \
-    --prefer-dist
-
-# Run migrations FIRST (critical for Botble)
-RUN php artisan migrate --force
-
-# Link storage
-RUN php artisan storage:link
-
-# Publish assets BEFORE clearing caches (critical for Botble)
-RUN php artisan cms:publish:assets
-
-# Clear caches AFTER migrations and asset publishing (critical for Botble)
-RUN php artisan config:clear \
- && php artisan route:clear \
- && php artisan view:clear \
- && php artisan cache:clear
-
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
- && chmod -R 755 /var/www/html \
+ && find /var/www/html -type d -exec chmod 755 {} \; \
+ && find /var/www/html -type f -exec chmod 644 {} \; \
  && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Apache document root
@@ -86,4 +72,8 @@ RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+# Use entrypoint script for runtime tasks
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+CMD ["docker-entrypoint.sh"]
