@@ -14,8 +14,21 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libicu-dev \
     && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_sqlite mbstring exif pcntl bcmath gd xml zip calendar
+    && docker-php-ext-install \
+        pdo_sqlite \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        xml \
+        zip \
+        calendar \
+        intl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -27,36 +40,36 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 # Copy application files
-COPY . /var/www/html/
+COPY . .
 
 # Copy production .env
 COPY .env.production .env
 
-# Make sure SQLite database file exists
-RUN touch database/database.sqlite
+# Ensure SQLite database exists
+RUN mkdir -p database && touch database/database.sqlite
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --prefer-dist
 
-# Generate app key if not already set
-RUN php artisan key:generate
-
-
+# Generate app key (safe even if already set)
+RUN php artisan key:generate --force
 
 # Clear caches
 RUN php artisan config:clear && php artisan cache:clear
 
-# Set proper permissions
+# Permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html && \
-    chmod -R 775 /var/www/html/storage && \
-    chmod -R 775 /var/www/html/bootstrap/cache
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Configure Apache document root
-RUN sed -i -e 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
+# Apache document root
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
+    /etc/apache2/sites-available/000-default.conf
 
-# Expose port
 EXPOSE 80
 
-# Start Apache
 CMD ["apache2-foreground"]
