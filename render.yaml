@@ -1,7 +1,22 @@
 services:
   - type: web
-    name: tgne_jobs
+    name: jobbox-app
     env: docker
     region: oregon
     plan: free
     healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: mysql
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: CMS_ENABLE_INSTALLER
+        value: false

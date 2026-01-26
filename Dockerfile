@@ -11,12 +11,13 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libsqlite3-dev \
     libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml \
+    libcurl4-openssl-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml tokenizer \
     && docker-php-ext-install zip \
-    && docker-php-ext-install calendar \
-    && php -m | grep -i zip \
-    && php -m | grep -i calendar \
-    && php -m | grep -i tokenizer || echo "Tokenizer extension is built-in"
+    && docker-php-ext-install calendar
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
@@ -27,24 +28,27 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy composer files first for better caching
+COPY composer.json composer.lock /var/www/html/
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction --prefer-dist
+
 # Copy application files
 COPY . /var/www/html
 
-# Debug: Check directory contents before composer install
-RUN ls -la /var/www/html/
-RUN ls -la /var/www/html/composer.*
+# Copy custom .env file for production
+COPY .env.production .env
 
-# Install PHP dependencies
-RUN cd /var/www/html && \
-    composer self-update && \
-    composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction --prefer-dist || \
-    (echo "Composer install failed, trying alternative approach" && \
-     composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction --prefer-source) || \
-    (echo "Both composer approaches failed, creating minimal autoloader" && \
-     mkdir -p vendor && \
-     echo "<?php" > vendor/autoload.php && \
-     echo "// Minimal autoloader for basic functionality" >> vendor/autoload.php)
-RUN ls -la /var/www/html/vendor/autoload.php || echo "vendor/autoload.php not found"
+# Generate application key using php command directly
+RUN php -r "file_put_contents('.env', preg_replace('/^APP_KEY=.*$/m', 'APP_KEY=' . base64_encode(random_bytes(32)), file_get_contents('.env')));"
+
+# Make deployment script executable and run it
+COPY deploy.sh /var/www/html/deploy.sh
+RUN chmod +x deploy.sh
+
+# Clear caches
+RUN php artisan config:clear && php artisan cache:clear
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html && \
@@ -61,5 +65,9 @@ EXPOSE 80
 # Create symbolic link for storage
 RUN ln -sf ../storage/app/public public/storage
 
+# Create a startup script that runs deployment tasks first
+RUN echo '#!/bin/bash\n\n# Run deployment script\nphp /var/www/html/deploy.sh\n\n# Start Apache in foreground\napache2-foreground' > /start.sh
+RUN chmod +x /start.sh
+
 # Start Apache in foreground
-CMD ["apache2-foreground"]
+CMD ["/start.sh"]
