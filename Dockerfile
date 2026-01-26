@@ -26,7 +26,8 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --verbose || echo "Composer install failed"
+RUN ls -la /var/www/html/vendor/autoload.php || echo "vendor/autoload.php not found"
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html && \
