@@ -45,8 +45,13 @@ COPY . .
 # Copy production .env
 COPY .env.production .env
 
-# Ensure SQLite database exists
-RUN mkdir -p database && touch database/database.sqlite
+# Ensure directories exist and are writable
+RUN mkdir -p database \
+ && touch database/database.sqlite \
+ && mkdir -p storage/framework/{sessions,views,cache} \
+ && mkdir -p bootstrap/cache \
+ && chown -R www-data:www-data database storage bootstrap/cache \
+ && chmod -R 775 database storage bootstrap/cache
 
 # Install PHP dependencies
 RUN composer install \
@@ -55,16 +60,22 @@ RUN composer install \
     --no-interaction \
     --prefer-dist
 
-# Generate app key (safe even if already set)
-RUN php artisan key:generate --force
-
 # Clear caches
-RUN php artisan config:clear && php artisan cache:clear
+RUN php artisan config:clear \
+ && php artisan route:clear \
+ && php artisan view:clear \
+ && php artisan cache:clear
 
-# Permissions
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Run migrations
+RUN php artisan migrate --force
+
+# Link storage
+RUN php artisan storage:link
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+ && chmod -R 755 /var/www/html \
+ && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Apache document root
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
