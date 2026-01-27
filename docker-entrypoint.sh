@@ -1,20 +1,24 @@
 #!/bin/bash
 set -e
 
-# Run migrations
+echo "Booting application..."
+
+# Ensure SQLite DB exists (Render disk may be empty)
+if [ ! -f database/database.sqlite ]; then
+  echo "Creating SQLite database..."
+  touch database/database.sqlite
+  chown www-data:www-data database/database.sqlite
+  chmod 664 database/database.sqlite
+fi
+
+# Laravel key (safe if already exists)
+php artisan key:generate --force || true
+
+# Run migrations every deploy
 php artisan migrate --force
 
-# Link storage
-php artisan storage:link
+# Clear & rebuild caches (Botble needs this)
+php artisan optimize:clear
+php artisan optimize
 
-# Publish assets
-php artisan cms:publish:assets
-
-# Clear caches
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-php artisan cache:clear
-
-# Start Apache
-exec apache2-foreground
+exec "$@"

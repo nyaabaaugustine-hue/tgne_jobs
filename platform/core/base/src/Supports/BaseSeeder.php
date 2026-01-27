@@ -34,13 +34,13 @@ class BaseSeeder extends Seeder
 
     protected Carbon $now;
 
-    protected string $basePath;
+    protected ?string $basePath = null;
 
-    public function uploadFiles(string $folder, ?string $basePath = null): array
+    public function uploadFiles(string $folder): array
     {
-        $folderPath = $basePath ?: $this->getBasePath() . '/' . $folder;
+        $folderPath = $this->getBasePath() . '/' . $folder;
 
-        $folder = ltrim(str_replace(database_path('seeders/files'), '', $folderPath), '/');
+        $folder = ltrim(str_replace(str_replace('\\', '/', database_path('seeders/files')), '', str_replace('\\', '/', $folderPath)), '/');
 
         if (! File::isDirectory($folderPath)) {
             throw new FileNotFoundException('Folder not found: ' . $folderPath);

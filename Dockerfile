@@ -1,70 +1,46 @@
 FROM php:8.4-apache
 
-# Install system dependencies
+# System dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    libsqlite3-dev \
-    libzip-dev \
-    libcurl4-openssl-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libicu-dev \
-    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
+    git curl zip unzip \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    libonig-dev libxml2-dev libzip-dev \
+    libsqlite3-dev libicu-dev \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
-        pdo_sqlite \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd \
-        xml \
-        zip \
-        calendar \
-        intl \
+    pdo_sqlite mbstring exif pcntl bcmath gd xml zip intl calendar \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache mods
+# Apache mods
 RUN a2enmod rewrite headers
 
-# Install Composer
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy only composer files first for caching
-COPY composer.json composer.lock .env.production ./
-
-# Install PHP dependencies
-RUN composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction \
-    --prefer-dist
-
-# Copy rest of the app
+# COPY EVERYTHING FIRST (Botble requirement)
 COPY . .
 
-# Ensure directories exist and are writable
-RUN mkdir -p database \
- && touch database/database.sqlite \
- && mkdir -p storage/framework/{sessions,views,cache} \
- && mkdir -p bootstrap/cache \
- && chown -R www-data:www-data database storage bootstrap/cache \
- && chmod -R 775 database storage bootstrap/cache
+# Force SQLite (no guessing, no .env dependency)
+ENV DB_CONNECTION=sqlite
+ENV DB_DATABASE=/var/www/html/database/database.sqlite
+ENV APP_ENV=production
+ENV APP_DEBUG=false
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
- && find /var/www/html -type d -exec chmod 755 {} \; \
- && find /var/www/html -type f -exec chmod 644 {} \; \
- && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Prepare folders & database
+RUN mkdir -p database storage framework bootstrap/cache \
+ && touch database/database.sqlite \
+ && chown -R www-data:www-data /var/www/html \
+ && chmod -R 775 storage bootstrap/cache database
+
+# Install PHP deps AFTER platform exists
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-interaction
 
 # Apache document root
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
@@ -72,8 +48,9 @@ RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
 
 EXPOSE 80
 
-# Use entrypoint script for runtime tasks
-COPY docker-entrypoint.sh /usr/local/bin/
+# Entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-CMD ["docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["apache2-foreground"]
