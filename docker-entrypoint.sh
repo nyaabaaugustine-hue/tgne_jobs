@@ -11,9 +11,6 @@ if [ ! -f database/database.sqlite ]; then
   chmod 664 database/database.sqlite
 fi
 
-# Laravel key (safe if already exists)
-php artisan key:generate --force || true
-
 # Run migrations every deploy
 php artisan migrate --force
 

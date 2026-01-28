@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Apache mods
-RUN a2enmod rewrite headers
+RUN a2dismod mpm_event mpm_worker || true \
+ && a2enmod mpm_prefork rewrite headers
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
