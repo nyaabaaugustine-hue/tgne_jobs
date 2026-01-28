@@ -2,7 +2,8 @@ services:
   - type: web
     name: tgne-jobs
     env: docker
-    plan: free
+    plan: starter
+    healthCheckPath: /
     envVars:
       - key: APP_NAME
         value: JobBox
@@ -17,11 +18,9 @@ services:
       - key: LOG_CHANNEL
         value: stderr
       - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_URL
-        fromDatabase:
-          name: tgne-jobs-db
-          property: connectionString
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
       - key: SESSION_DRIVER
         value: database
       - key: CACHE_STORE
@@ -32,9 +31,3 @@ services:
         value: sync
       - key: CMS_ENABLE_INSTALLER
         value: false
-
-databases:
-  - name: tgne-jobs-db
-    databaseName: tgne_jobs
-    user: tgne_user
-    plan: free
