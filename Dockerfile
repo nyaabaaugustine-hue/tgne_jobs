@@ -43,9 +43,11 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
-# Set up Apache document root
+# Set up Apache document root and allow .htaccess overrides
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
     /etc/apache2/sites-available/000-default.conf
+RUN sed -i '/<Directory \/var\/www\/html>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' \
+    /etc/apache2/apache2.conf
 
 # Configure Apache to listen on Render's port
 ENV PORT 10000
