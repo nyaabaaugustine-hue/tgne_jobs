@@ -24,6 +24,13 @@ WORKDIR /var/www/html
 # COPY EVERYTHING FIRST (Botble requirement)
 COPY . .
 
+# Install PHP deps AFTER platform exists
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-interaction
+
 # Force SQLite (no guessing, no .env dependency)
 ENV DB_CONNECTION=sqlite
 ENV DB_DATABASE=/var/www/html/database/database.sqlite
@@ -58,13 +65,6 @@ RUN mkdir -p database storage framework bootstrap/cache storage/framework/views 
  && touch database/database.sqlite \
  && chown -R www-data:www-data /var/www/html \
  && chmod -R 775 storage bootstrap/cache database
-
-# Install PHP deps AFTER platform exists
-RUN composer install \
-    --no-dev \
-    --prefer-dist \
-    --optimize-autoloader \
-    --no-interaction
 
 # Apache document root
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
