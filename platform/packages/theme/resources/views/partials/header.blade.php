@@ -15,8 +15,8 @@
 
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
+  "@@context": "https://schema.org",
+  "@@type": "WebSite",
   "name": "{{ rescue(fn() => SeoHelper::openGraph()->getProperty('site_name')) }}",
   "url": "{{ url('') }}"
 }
