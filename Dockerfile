@@ -27,7 +27,7 @@ COPY . .
 # If .env exists locally, copy it
 # COPY .env .env
 # Otherwise fallback to example
-RUN cp .env.example .env 2>/dev/null || true
+# RUN cp .env.example .env 2>/dev/null || true
 
 # Force SQLite (no guessing, no .env dependency)
 ENV DB_CONNECTION=sqlite
@@ -70,9 +70,6 @@ RUN composer install \
     --prefer-dist \
     --optimize-autoloader \
     --no-interaction
-
-# Ensure app key is valid
-RUN php artisan key:generate --force
 
 # Cache configs after env is present
 RUN php artisan config:cache
