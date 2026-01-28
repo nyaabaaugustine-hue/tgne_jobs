@@ -4,6 +4,12 @@ version = "1.0.0"
 description = "JobBox application deployed with Wasmer"
 license = "MIT"
 
+[deploy]
+method = "docker"
+image = "php:8.4-apache"
+build_command = "docker build -t jobbox-app ."
+start_command = "docker run -p ${PORT}:80 jobbox-app"
+
 [[command]]
 name = "serve"
 command = ["apache2-foreground"]
