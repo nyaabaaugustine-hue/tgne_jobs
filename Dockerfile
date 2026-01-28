@@ -23,18 +23,12 @@ WORKDIR /var/www/html
 # COPY EVERYTHING FIRST (Botble requirement)
 COPY . .
 
-# Make .env available
-# If .env exists locally, copy it
-# COPY .env .env
-# Otherwise fallback to example
-# RUN cp .env.example .env 2>/dev/null || true
-
 # Force SQLite (no guessing, no .env dependency)
 ENV DB_CONNECTION=sqlite
 ENV DB_DATABASE=/var/www/html/database/database.sqlite
 ENV APP_ENV=production
 ENV APP_DEBUG=false
-ENV APP_URL=http://localhost
+ENV APP_URL=https://jobbox-app-production.up.railway.app
 ENV APP_NAME=JobBox
 ENV APP_KEY=base64:Omp5ltYMzn9+LpxAj63fE2Hd8qP2svGrGKf0/er+0IQ=
 ENV APP_CIPHER=AES-256-CBC
@@ -70,11 +64,6 @@ RUN composer install \
     --prefer-dist \
     --optimize-autoloader \
     --no-interaction
-
-# Cache configs after env is present
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan view:cache
 
 # Apache document root
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
