@@ -24,6 +24,18 @@ WORKDIR /var/www/html
 # COPY EVERYTHING FIRST (Botble requirement)
 COPY . .
 
+# Create cache & storage dirs BEFORE composer runs
+RUN mkdir -p \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache \
+    database \
+ && touch database/database.sqlite \
+ && chown -R www-data:www-data /var/www/html \
+ && chmod -R 775 storage bootstrap/cache database
+
 # Install PHP deps AFTER platform exists
 RUN composer install \
     --no-dev \
@@ -59,12 +71,6 @@ ENV VIEW_COMPILED_PATH=/var/www/html/storage/framework/views
 ENV CACHE_DRIVER=file
 ENV SESSION_DRIVER=file
 ENV QUEUE_CONNECTION=sync
-
-# Prepare folders & database
-RUN mkdir -p database storage framework bootstrap/cache storage/framework/views \
- && touch database/database.sqlite \
- && chown -R www-data:www-data /var/www/html \
- && chmod -R 775 storage bootstrap/cache database
 
 # Apache document root
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
