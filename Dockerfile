@@ -85,7 +85,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-# Optional: healthcheck override
-# Healthcheck handled by Railway platform
-# HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
-#  CMD curl -f http://localhost/health || exit 1
+# Healthcheck for container
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
+ CMD curl -f http://localhost/health || exit 1
