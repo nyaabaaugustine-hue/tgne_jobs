@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+echo "=== Starting docker-entrypoint.sh ==="
+
 # Ensure SQLite DB exists
 if [ ! -f database/database.sqlite ]; then
   echo "Creating SQLite database..."
