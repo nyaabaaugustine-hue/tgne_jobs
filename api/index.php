@@ -1,20 +1,31 @@
 <?php
-// Vercel-compatible Laravel entry point
+// Vercel-compatible Laravel bootstrap
 
-// Set the base path to the Laravel public directory
-$uri = urldecode(
-    parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
-);
+// Set the environment
+$_ENV['APP_ENV'] = 'production';
+$_SERVER['APP_ENV'] = 'production';
 
-// This file allows us to emulate Apache's "mod_rewrite" functionality from the
-// built-in PHP web server. This provides a convenient way to test a Laravel
-// application without having installed a "real" web server software here.
-if ($uri !== '/' && file_exists(__DIR__.'/../public'.$uri)) {
-    return false;
+// Define the base path
+define('LARAVEL_START', microtime(true));
+
+// Check if we're in the right directory
+if (!file_exists(__DIR__.'/../vendor/autoload.php')) {
+    echo "Autoloader not found. Please run composer install.";
+    exit(1);
 }
 
-// Change to the public directory
-chdir(__DIR__.'/../public');
+// Load Composer autoloader
+require_once __DIR__.'/../vendor/autoload.php';
 
-// Require the main Laravel public index.php
-require_once __DIR__.'/../public/index.php';
+// Create the Laravel application
+$app = require_once __DIR__.'/../bootstrap/app.php';
+
+// Create a request from the current server variables
+$request = Illuminate\Http\Request::capture();
+
+// Handle the request and send the response
+$response = $app->handle($request);
+$response->send();
+
+// Terminate the application
+$app->terminate($request, $response);
