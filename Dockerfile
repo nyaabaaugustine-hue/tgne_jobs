@@ -84,6 +84,6 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Healthcheck for container (Botble uses root path)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s \
- CMD curl -f http://localhost/ || exit 1
+ CMD curl -f http://localhost/health || exit 1
 
 CMD ["apache2-foreground"]
