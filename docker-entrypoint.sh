@@ -11,11 +11,19 @@ if [ ! -f database/database.sqlite ]; then
   chmod 664 database/database.sqlite
 fi
 
-# Run migrations every deploy
-php artisan migrate --force
+# Wait a moment for services to be ready
+sleep 2
+
+# Only run migrations if environment is properly configured
+if [ -n "$APP_KEY" ] && [ -n "$DB_CONNECTION" ]; then
+  echo "Running migrations..."
+  php artisan migrate --force || echo "Migration failed, continuing..."
+else
+  echo "Environment not fully configured, skipping migrations"
+fi
 
 # Clear & rebuild caches (Botble needs this)
-php artisan optimize:clear
-php artisan optimize
+php artisan optimize:clear || echo "Optimize clear failed, continuing..."
+php artisan optimize || echo "Optimize failed, continuing..."
 
-exec "$@"
+exec apache2-foreground
