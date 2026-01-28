@@ -1,4 +1,7 @@
 {
   "name": "tgne_jobs",
-  "runtime": "docker"
+  "runtime": "docker",
+  "build": {
+    "context": "."
+  }
 }
