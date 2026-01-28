@@ -1,11 +1,4 @@
 {
   "name": "tgne_jobs",
-  "runtime": "docker",
-  "dockerfile": "Dockerfile",
-  "build": {
-    "context": "."
-  },
-  "start": {
-    "command": "apache2-foreground"
-  }
+  "runtime": "docker"
 }
