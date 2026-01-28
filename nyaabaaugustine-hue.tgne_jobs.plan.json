@@ -1,0 +1,19 @@
+{
+  "name": "tgne_jobs",
+  "owner": "nyaabaaugustine-hue",
+  "type": "docker",
+  "dockerfile": "Dockerfile",
+  "build": {
+    "context": "."
+  },
+  "deploy": {
+    "startCommand": "apache2-foreground",
+    "port": 80
+  },
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "DB_CONNECTION": "sqlite",
+    "APP_KEY": "base64:Omp5ltYMzn9+LpxAj63fE2Hd8qP2svGrGKf0/er+0IQ="
+  }
+}
