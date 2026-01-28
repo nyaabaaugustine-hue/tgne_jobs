@@ -46,7 +46,7 @@ RUN composer install \
 # Botble CMS Environment Variables
 ENV APP_ENV=production
 ENV APP_DEBUG=false
-ENV APP_URL=https://jobbox-app-production.up.railway.app
+ENV APP_URL=http://localhost:8000
 ENV APP_NAME=JobBox
 ENV APP_KEY=base64:Omp5ltYMzn9+LpxAj63fE2Hd8qP2svGrGKf0/er+0IQ=
 ENV APP_CIPHER=AES-256-CBC
