@@ -76,7 +76,8 @@ ENV QUEUE_CONNECTION=sync
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
     /etc/apache2/sites-available/000-default.conf
 
-EXPOSE 80
+# Railway will set PORT env var
+# EXPOSE 80
 
 # Entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
