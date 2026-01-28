@@ -15,6 +15,6 @@
 
         @if (empty($withoutNavbar))
             {!! Theme::partial('navbar') !!}
-        @endempty
+        @endif
 
         <main class="main">
