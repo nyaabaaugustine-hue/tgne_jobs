@@ -43,9 +43,7 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
-# Force SQLite (no guessing, no .env dependency)
-ENV DB_CONNECTION=sqlite
-ENV DB_DATABASE=/var/www/html/database/database.sqlite
+# Botble CMS Environment Variables
 ENV APP_ENV=production
 ENV APP_DEBUG=false
 ENV APP_URL=https://jobbox-app-production.up.railway.app
@@ -55,22 +53,21 @@ ENV APP_CIPHER=AES-256-CBC
 ENV APP_LOCALE=en
 ENV APP_FALLBACK_LOCALE=en
 ENV APP_FAKER_LOCALE=en_US
+ENV DB_CONNECTION=sqlite
+ENV DB_DATABASE=/var/www/html/database/database.sqlite
 ENV ADMIN_DIR=admin
 ENV CMS_DISABLE_VERIFICATION=true
 ENV CMS_DISABLE_UPDATE_CHECK=true
 ENV CMS_DISABLE_WARNING_MESSAGES=true
 ENV CMS_ENABLE_INSTALLER=false
-ENV QUEUE_CONNECTION=sync
-ENV CACHE_STORE=file
+ENV CACHE_DRIVER=file
 ENV SESSION_DRIVER=file
+ENV QUEUE_CONNECTION=sync
 ENV BROADCAST_DRIVER=log
 ENV LOG_CHANNEL=stderr
 ENV LOG_LEVEL=error
 ENV FILESYSTEM_DISK=local
 ENV VIEW_COMPILED_PATH=/var/www/html/storage/framework/views
-ENV CACHE_DRIVER=file
-ENV SESSION_DRIVER=file
-ENV QUEUE_CONNECTION=sync
 
 # Apache document root
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
@@ -85,6 +82,8 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 
-# Healthcheck for container
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
- CMD curl -f http://localhost/health || exit 1
+# Healthcheck for container (Botble uses root path)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s \
+ CMD curl -f http://localhost/ || exit 1
+
+CMD ["apache2-foreground"]
