@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev libicu-dev \
  && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
-    pdo_sqlite mbstring exif pcntl bcmath gd xml zip intl calendar \
+    pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd xml zip intl calendar \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -53,8 +53,13 @@ ENV APP_CIPHER=AES-256-CBC
 ENV APP_LOCALE=en
 ENV APP_FALLBACK_LOCALE=en
 ENV APP_FAKER_LOCALE=en_US
-ENV DB_CONNECTION=sqlite
-ENV DB_DATABASE=/var/www/html/database/database.sqlite
+# Use MySQL if available (via Wasmer), otherwise SQLite
+ENV DB_CONNECTION=mysql
+ENV DB_HOST=${DB_HOST}
+ENV DB_PORT=${DB_PORT}
+ENV DB_DATABASE=${DB_NAME}
+ENV DB_USERNAME=${DB_USERNAME}
+ENV DB_PASSWORD=${DB_PASSWORD}
 ENV ADMIN_DIR=admin
 ENV CMS_DISABLE_VERIFICATION=true
 ENV CMS_DISABLE_UPDATE_CHECK=true

@@ -8,17 +8,9 @@ echo "Setting up file permissions..."
 chown -R www-data:www-data /var/www/html
 chmod -R 755 /var/www/html
 
-# Ensure SQLite DB exists
-if [ ! -f database/database.sqlite ]; then
-  echo "Creating SQLite database..."
-  touch database/database.sqlite
-  chown www-data:www-data database/database.sqlite
-  chmod 664 database/database.sqlite
-fi
-
 # Start Apache in background to allow artisan commands to run
 if [ -n "$PORT" ]; then
-  echo "Configuring Apache for Railway port: $PORT"
+  echo "Configuring Apache for Wasmer port: $PORT"
   sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf
   sed -i "s/:80>/:$PORT>/g" /etc/apache2/sites-available/000-default.conf
   sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf
