@@ -18,7 +18,7 @@
 @section('content')
     <div class="row">
         <div class="col-12">
-            @if (config('core.base.general.enable_system_updater') && Auth::user()->isSuperUser())
+            @if \(config\('core.base.general.enable_system_updater'\) && Auth::user\(\)->isSuperUser\(\) \)
                 <v-check-for-updates
                     check-update-url="{{ route('system.check-update') }}"
                     v-slot="{ hasNewVersion, message }"

@@ -54,6 +54,7 @@ return [
             }
 
             // You may use this event to set up your assets.
+            $theme->asset()->usePath()->add('hide-warnings', 'css/hide-warnings.css', [], [], $version);
             $theme->asset()->usePath()->add('style', 'css/style.css', [], [], $version);
 
             if (BaseHelper::isRtlEnabled()) {
