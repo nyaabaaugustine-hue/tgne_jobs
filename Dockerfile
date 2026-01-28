@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 
 # Enable Apache modules
 RUN a2dismod mpm_event mpm_worker || true \
- && a2enmod mpm_prefork rewrite headers
+ && a2enmod mpm_prefork rewrite headers ssl expires deflate filter proxy proxy_http
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -50,6 +50,7 @@ RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
 # Configure Apache to listen on Render's port
 ENV PORT 10000
 RUN sed -i 's/Listen 80$/Listen ${PORT}/g' /etc/apache2/ports.conf
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Copy and enable the entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
