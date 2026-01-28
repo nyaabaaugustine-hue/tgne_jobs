@@ -83,7 +83,6 @@ COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["apache2-foreground"]
 
 # Optional: healthcheck override
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s \
