@@ -1,10 +1,11 @@
 {
   "name": "tgne_jobs",
   "runtime": "docker",
+  "dockerfile": "Dockerfile",
   "build": {
-    "command": "docker build -t jobbox-app ."
+    "context": "."
   },
   "start": {
-    "command": "docker run -p ${PORT:-8000}:80 jobbox-app"
+    "command": "apache2-foreground"
   }
 }
