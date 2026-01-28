@@ -86,5 +86,5 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Optional: healthcheck override
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s \
- CMD curl -f http://localhost/ || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
+ CMD curl -f http://localhost/health || exit 1
