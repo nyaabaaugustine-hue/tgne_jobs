@@ -52,6 +52,10 @@ php artisan view:cache || true
 kill $APACHE_PID 2>/dev/null || true
 wait $APACHE_PID 2>/dev/null || true
 
+echo "Waiting for Laravel to fully initialize..."
+# Sleep to allow Laravel to fully initialize
+sleep 20
+
 echo "Starting Apache for final service..."
 # Start Apache for actual service
 exec apache2-foreground
