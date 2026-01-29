@@ -28,4 +28,7 @@ composer dump-autoload --optimize --classmap-authoritative
 # Cache config and routes for production
 php artisan optimize
 
+# Ensure admin user is activated
+php artisan db:seed --class=AdminUserActivationSeeder --force
+
 echo "Deployment completed!"

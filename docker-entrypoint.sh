@@ -92,6 +92,11 @@ php artisan migrate:status || {
   }
 }
 
+# Ensure admin user is activated AFTER migrations
+php artisan db:seed --class=AdminUserActivationSeeder --force || {
+  echo "Admin user activation failed"
+}
+
 # Install demo data if CMS_ENABLE_DEMO_DATA is set to true
 if [ "$CMS_ENABLE_DEMO_DATA" = "true" ] || [ "$CMS_ENABLE_DEMO_DATA" = "1" ]; then
   echo "Installing demo data..."
@@ -110,6 +115,11 @@ fi
 php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
+
+# Ensure admin user is activated
+php artisan db:seed --class=AdminUserActivationSeeder --force || {
+  echo "Admin user activation failed"
+}
 
 # Check for Laravel logs
 if [ -f "storage/logs/laravel.log" ]; then

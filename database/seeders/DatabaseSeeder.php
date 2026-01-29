@@ -2,51 +2,19 @@
 
 namespace Database\Seeders;
 
-use Botble\ACL\Database\Seeders\UserSeeder;
-use Botble\Base\Supports\BaseSeeder;
-use Botble\JobBoard\Database\Seeders\CurrencySeeder;
-use Botble\Language\Database\Seeders\LanguageSeeder;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends BaseSeeder
+class DatabaseSeeder extends Seeder
 {
-    public function run(): void
+    /**
+     * Seed the application's database.
+     *
+     * @return void
+     */
+    public function run()
     {
-        $this->prepareRun();
-
-        $this->call([
-            UserSeeder::class,
-            LanguageSeeder::class,
-            PageSeeder::class,
-            BlogSeeder::class,
-            GallerySeeder::class,
-            ContactSeeder::class,
-            WidgetSeeder::class,
-            ThemeOptionSeeder::class,
-            SettingSeeder::class,
-            LocationSeeder::class,
-            CareerLevelSeeder::class,
-            DegreeLevelSeeder::class,
-            DegreeTypeSeeder::class,
-            FunctionalAreaSeeder::class,
-            JobCategorySeeder::class,
-            JobExperienceSeeder::class,
-            JobShiftSeeder::class,
-            JobSkillSeeder::class,
-            JobTypeSeeder::class,
-            CompanySeeder::class,
-            LanguageLevelSeeder::class,
-            JobSeeder::class,
-            CurrencySeeder::class,
-            AccountSeeder::class,
-            PackageSeeder::class,
-            ReviewSeeder::class,
-            TeamSeeder::class,
-            TestimonialSeeder::class,
-            FaqSeeder::class,
-            MenuSeeder::class,
-            JobApplicationSeeder::class,
-        ]);
-
-        $this->finished();
+        // Run the admin user activation seeder
+        $this->call(AdminUserActivationSeeder::class);
     }
 }
