@@ -66,13 +66,13 @@ fi
 # Check if database is PostgreSQL and wait for connection
 if [ "$DB_CONNECTION" = "pgsql" ]; then
   echo "Waiting for PostgreSQL connection..."
-  # Wait for PostgreSQL to be ready
-  for i in $(seq 1 30); do
-    if php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Connected'; } catch (Exception \$e) { echo 'Failed'; }" 2>/dev/null | grep -q "Connected"; then
+  # Wait for PostgreSQL to be ready (max 5 minutes)
+  for i in $(seq 1 60); do
+    if php -r "try { new PDO('pgsql:host=$DB_HOST;port=$DB_PORT;dbname=$DB_DATABASE', '$DB_USERNAME', '$_ENV[DB_PASSWORD]'); echo 'Connected'; } catch (Exception \$e) { echo 'Failed'; }" 2>/dev/null | grep -q "Connected"; then
       echo "Connected to PostgreSQL"
       break
     fi
-    echo "Waiting for PostgreSQL... ($i/30)"
+    echo "Waiting for PostgreSQL... ($i/60)"
     sleep 5
   done
 fi
@@ -81,7 +81,7 @@ fi
 echo "Running migrations..."
 php artisan migrate --force || {
   echo "Migration failed - checking connection..."
-  php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'DB Connected'; } catch (Exception \$e) { echo 'DB Error: '.\$e->getMessage(); }" || true
+  php -r "try { new PDO('pgsql:host=$DB_HOST;port=$DB_PORT;dbname=$DB_DATABASE', '$DB_USERNAME', '$_ENV[DB_PASSWORD]'); echo 'DB Connected'; } catch (Exception \$e) { echo 'DB Error: '.\$e->getMessage(); }" || true
   exit 1
 }
 
@@ -95,20 +95,16 @@ php artisan db:seed --class=AdminUserActivationSeeder --force || {
   echo "Admin user activation failed"
 }
 
-# Install demo data if CMS_ENABLE_DEMO_DATA is set to true
-if [ "$CMS_ENABLE_DEMO_DATA" = "true" ] || [ "$CMS_ENABLE_DEMO_DATA" = "1" ]; then
-  echo "Installing demo data..."
-  # Run all seeders to populate demo data
-  php artisan db:seed --class=CompanySeeder --force || true
-  php artisan db:seed --class=JobSeeder --force || true
-  php artisan db:seed --class=JobCategorySeeder --force || true
-  php artisan db:seed --class=LocationSeeder --force || true
-  php artisan db:seed --class=BlogSeeder --force || true
-  php artisan db:seed --class=JobApplicationSeeder --force || true
-  php artisan db:seed --class=HomePageSeeder --force || true
-else
-  echo "Demo data installation skipped (set CMS_ENABLE_DEMO_DATA=true to enable)"
-fi
+# Install demo data
+echo "Installing demo data..."
+# Run all seeders to populate demo data
+php artisan db:seed --class=CompanySeeder --force || true
+php artisan db:seed --class=JobSeeder --force || true
+php artisan db:seed --class=JobCategorySeeder --force || true
+php artisan db:seed --class=LocationSeeder --force || true
+php artisan db:seed --class=BlogSeeder --force || true
+php artisan db:seed --class=JobApplicationSeeder --force || true
+php artisan db:seed --class=HomePageSeeder --force || true
 
 # Cache configuration after migrations
 php artisan config:cache || true
