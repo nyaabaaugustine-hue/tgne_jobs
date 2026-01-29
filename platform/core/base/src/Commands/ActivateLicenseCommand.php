@@ -92,7 +92,7 @@ class ActivateLicenseCommand extends Command
         $status = $this->core->activateLicense($purchasedCode, $username);
 
         if (! $status) {
-            $this->components->error('This license is invalid.');
+            $this->components->error('License activation failed.');
 
             return self::FAILURE;
         }

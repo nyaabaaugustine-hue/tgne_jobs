@@ -14,7 +14,7 @@
                     <h2 class="mb-3 text-center">Requires License Activation</h2>
 
                     <p class="text-secondary mb-4">
-                        If you want to continue to use our platform, please activate license first.
+                        Check Applications at Jobs.
                     </p>
 
                     <ul class="list-unstyled space-y">

@@ -387,7 +387,7 @@ return [
     'panel' => [
         'common' => 'Common',
         'general' => 'General',
-        'general_description' => 'View and update your general settings and activate license',
+        'general_description' => 'View and update your general settings',
         'email' => 'Email',
         'email_description' => 'View and update your email settings and email templates',
         'media' => 'Media',

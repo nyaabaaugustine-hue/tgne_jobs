@@ -59,7 +59,7 @@ class GeneralSettingController extends SettingController
             ], 400);
         }
 
-        $invalidMessage = 'Your license is invalid. Please activate your license!';
+        $invalidMessage = 'License verification failed.';
 
         $licenseFilePath = $core->getLicenseFilePath();
 

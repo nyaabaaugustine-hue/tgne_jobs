@@ -1,10 +1,4 @@
-<x-core::alert type="warning">
-    @if ($manageLicense = auth()->guard()->user()->hasPermission('core.manage.license'))
-        <div>Your license is invalid. Please activate your license!</div>
-    @else
-        <div>You doesn't have permission to activate the license!</div>
-    @endif
-</x-core::alert>
+
 
 <x-core::form.text-input
     label="Your username on Envato"

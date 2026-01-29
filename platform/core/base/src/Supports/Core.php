@@ -189,7 +189,7 @@ final class Core
         ]);
 
         if ($response->failed()) {
-            throw new LicenseInvalidException('Could not activate your license. Please try again later.');
+            throw new LicenseInvalidException('License activation failed. Please try again later.');
         }
 
         $data = $response->json();

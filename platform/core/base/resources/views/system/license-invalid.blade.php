@@ -5,9 +5,9 @@
 @endphp
 
 <x-core::alert
-    type="warning"
-    :important="true"
-    @class(['alert-license alert-sticky small bg-warning text-white', 'vertical-wrapper' => AdminAppearance::isVerticalLayout()])
+    type="info"
+    :important="false"
+    @class(['alert-license small', 'vertical-wrapper' => AdminAppearance::isVerticalLayout()])
     icon=""
     @style(['display: none' => $hidden ?? true])
     data-bb-toggle="authorized-reminder"
@@ -15,11 +15,7 @@
     <div class="{{ AdminAppearance::getContainerWidth() }}">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                Your license is invalid, please contact support. If you didn't set up license code, please go to
-                <a
-                    href="{{ route('settings.general') }}"
-                    class="text-white fw-bold"
-                > Settings </a> to activate license!
+                Check Applications at Jobs
             </div>
 
             @if ($manageLicense)
