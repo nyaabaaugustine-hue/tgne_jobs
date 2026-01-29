@@ -47,11 +47,26 @@ php artisan route:clear || true
 php artisan view:clear || true
 php artisan cache:clear || true
 
-# Generate app key if not set
+# Check if .env file exists, if not create from example
+if [ ! -f .env ]; then
+  echo "Creating .env file from example..."
+  cp .env.example .env
+  # Set APP_KEY from environment if available
+  if [ -n "$APP_KEY" ]; then
+    sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|" .env
+  fi
+fi
+
+# Generate app key only if not set in environment
 if [ -z "$APP_KEY" ]; then
-  echo "APP_KEY not set in environment, skipping key generation"
+  echo "APP_KEY not set in environment, generating..."
+  php artisan key:generate --force
 else
-  echo "APP_KEY is already set"
+  echo "APP_KEY is already set via environment"
+  # Ensure the key is in the .env file for Laravel to pick it up
+  if [ -f .env ]; then
+    sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|" .env
+  fi
 fi
 
 # Check if database exists and run migrations
