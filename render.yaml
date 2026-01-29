@@ -4,6 +4,11 @@ services:
     env: docker
     plan: starter
     healthCheckPath: /
+    numInstances: 1
+    disk:
+      name: database
+      mountPath: /var/www/html/database
+      sizeGB: 1
     envVars:
       - key: APP_NAME
         value: JobBox
