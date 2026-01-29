@@ -24,6 +24,21 @@ if [ ! -f database/database.sqlite ]; then
   chmod 664 database/database.sqlite
 fi
 
+# Wait a moment for file system to sync
+sleep 2
+
+# Check if database file is writable
+echo "Checking database permissions..."
+ls -la database/database.sqlite
+
+echo "Ensuring storage directories exist..."
+mkdir -p storage/framework/cache
+mkdir -p storage/framework/sessions
+mkdir -p storage/framework/views
+mkdir -p storage/logs
+chown -R www-data:www-data storage/
+chmod -R 775 storage/
+
 echo "Running Laravel setup commands..."
 
 # Generate key if not set
