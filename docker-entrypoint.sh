@@ -49,8 +49,7 @@ php artisan cache:clear || true
 
 # Generate app key if not set
 if [ -z "$APP_KEY" ]; then
-  echo "Generating application key..."
-  php artisan key:generate --force
+  echo "APP_KEY not set in environment, skipping key generation"
 else
   echo "APP_KEY is already set"
 fi
