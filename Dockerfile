@@ -2,72 +2,68 @@ FROM php:8.4-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    libsqlite3-dev \
-    libzip-dev \
-    libcurl4-openssl-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd xml tokenizer \
-    && docker-php-ext-install zip \
-    && docker-php-ext-install calendar
+    git curl zip unzip \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    libonig-dev libxml2-dev libzip-dev \
+    libsqlite3-dev libicu-dev \
+ && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+    pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd xml zip intl calendar \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Enable Apache modules
+RUN a2dismod mpm_event mpm_worker || true \
+ && a2enmod mpm_prefork rewrite headers expires deflate filter proxy proxy_http \
+ && a2enmod rewrite \
+ && a2dissite default-ssl || true
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first for better caching
-COPY composer.json composer.lock /var/www/html/
+# Copy application files
+COPY . .
+
+# Create necessary directories and set permissions
+RUN mkdir -p \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache \
+    database \
+ && touch database/database.sqlite \
+ && chown -R www-data:www-data /var/www/html \
+ && chmod -R 775 storage bootstrap/cache database
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs --no-interaction --prefer-dist
+RUN composer install \
+    --no-dev \
+    --prefer-dist \
+    --optimize-autoloader \
+    --no-interaction
 
-# Copy application files
-COPY . /var/www/html
+# Set up Apache document root and allow .htaccess overrides
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
+    /etc/apache2/sites-available/000-default.conf
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' \
+    /etc/apache2/apache2.conf
+RUN echo 'LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so' > /etc/apache2/mods-enabled/rewrite.load
 
-# Copy custom .env file for production
-COPY .env.production .env
+# Configure Apache to listen on Render's port
+ENV PORT 10000
+RUN sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN sed -i "s/:80>/:${PORT}>/g" /etc/apache2/sites-available/000-default.conf
 
-# Generate application key using php command directly
-RUN php -r "file_put_contents('.env', preg_replace('/^APP_KEY=.*$/m', 'APP_KEY=' . base64_encode(random_bytes(32)), file_get_contents('.env')));"
+# Copy and enable the entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Make deployment script executable and run it
-COPY deploy.sh /var/www/html/deploy.sh
-RUN chmod +x deploy.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
 
-# Clear caches
-RUN php artisan config:clear && php artisan cache:clear
-
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html && \
-    chmod -R 775 /var/www/html/storage && \
-    chmod -R 775 /var/www/html/bootstrap/cache
-
-# Configure Apache document root
-RUN sed -i -e 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-available/000-default.conf
-
-# Expose port
-EXPOSE 80
-
-# Create symbolic link for storage
-RUN ln -sf ../storage/app/public public/storage
-
-# Create a startup script that runs deployment tasks first
-RUN echo '#!/bin/bash\n\n# Run deployment script\nphp /var/www/html/deploy.sh\n\n# Start Apache in foreground\napache2-foreground' > /start.sh
-RUN chmod +x /start.sh
-
-# Start Apache in foreground
-CMD ["/start.sh"]
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
+    CMD curl -f http://localhost/ || exit 1

@@ -1,22 +1,40 @@
 services:
   - type: web
-    name: jobbox-app
+    name: tgne-jobs
     env: docker
-    region: oregon
-    plan: free
+    plan: starter
     healthCheckPath: /
+    numInstances: 1
+    disk:
+      name: database
+      mountPath: /var/www/html/database
+      sizeGB: 1
     envVars:
+      - key: APP_NAME
+        value: JobBox
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
+      - key: APP_URL
+        value: https://tgne-jobs.onrender.com
+      - key: APP_KEY
+        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
       - key: DB_CONNECTION
-        value: mysql
-      - key: CACHE_DRIVER
-        value: file
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
       - key: SESSION_DRIVER
-        value: file
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: PHP_INI_MEMORY_LIMIT
+        value: 512M
       - key: QUEUE_CONNECTION
         value: sync
       - key: CMS_ENABLE_INSTALLER
         value: false
+      - key: CMS_ENABLE_DEMO_DATA
+        value: true

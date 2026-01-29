@@ -1,0 +1,12 @@
+{
+  "app": {
+    "name": "tgne_jobs",
+    "type": "container"
+  },
+  "build": {
+    "command": "docker build -t tgne_jobs ."
+  },
+  "start": {
+    "command": "docker run -p 80:80 tgne_jobs"
+  }
+}

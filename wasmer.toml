@@ -1,0 +1,22 @@
+[package]
+name = "jobbox-app"
+version = "1.0.0"
+description = "JobBox application deployed with Wasmer"
+license = "MIT"
+
+[deploy]
+method = "docker"
+build_command = "docker build -t jobbox-app ."
+start_command = "docker run -p ${PORT:-8000}:80 jobbox-app"
+
+[[command]]
+name = "serve"
+command = ["apache2-foreground"]
+alias = "start"
+
+[config]
+port = { default = 8000, description = "Port to run the application on" }
+
+[web]
+enabled = true
+port = 8000
