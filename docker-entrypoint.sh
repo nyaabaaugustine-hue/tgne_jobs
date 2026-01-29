@@ -95,7 +95,13 @@ php artisan migrate:status || {
 # Install demo data if CMS_ENABLE_DEMO_DATA is set to true
 if [ "$CMS_ENABLE_DEMO_DATA" = "true" ] || [ "$CMS_ENABLE_DEMO_DATA" = "1" ]; then
   echo "Installing demo data..."
-  php artisan cms:dummy-data:install --force
+  # Try the correct CMS install command with demo data
+  php artisan cms:install --demo || {
+    echo "Trying alternative demo installation..."
+    php artisan db:seed || {
+      echo "Demo data installation failed - continuing without demo data"
+    }
+  }
 else
   echo "Demo data installation skipped (set CMS_ENABLE_DEMO_DATA=true to enable)"
 fi
