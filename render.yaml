@@ -1,40 +1,43 @@
 services:
-  - type: web
-    name: tgne-jobs
-    env: docker
-    plan: starter
-    healthCheckPath: /
-    numInstances: 1
-    disk:
-      name: database
-      mountPath: /var/www/html/database
-      sizeGB: 1
-    envVars:
-      - key: APP_NAME
-        value: JobBox
-      - key: APP_ENV
-        value: production
-      - key: APP_DEBUG
-        value: false
-      - key: APP_URL
-        value: https://tgne-jobs.onrender.com
-      - key: APP_KEY
-        generateValue: true
-      - key: LOG_CHANNEL
-        value: stderr
-      - key: DB_CONNECTION
-        value: sqlite
-      - key: DB_DATABASE
-        value: /var/www/html/database/database.sqlite
-      - key: SESSION_DRIVER
-        value: database
-      - key: CACHE_STORE
-        value: database
-      - key: PHP_INI_MEMORY_LIMIT
-        value: 512M
-      - key: QUEUE_CONNECTION
-        value: sync
-      - key: CMS_ENABLE_INSTALLER
-        value: false
-      - key: CMS_ENABLE_DEMO_DATA
-        value: true
+- type: web
+  name: jobbox
+  env: docker
+  dockerfilePath: Dockerfile
+  envVars:
+    - key: APP_KEY
+      generateValue: true
+    - key: DB_HOST
+      fromDatabase:
+        name: jobbox-db
+        property: host
+    - key: DB_PORT
+      fromDatabase:
+        name: jobbox-db
+        property: port
+    - key: DB_USER
+      fromDatabase:
+        name: jobbox-db
+        property: username
+    - key: DB_PASS
+      fromDatabase:
+        name: jobbox-db
+        property: password
+    - key: DB_NAME
+      fromDatabase:
+        name: jobbox-db
+        property: databaseName
+    - key: REDIS_URL
+      fromService:
+        name: jobbox-redis
+        type: redis
+        property: connectionString
+
+databases:
+- name: jobbox-db
+  region: frankfurt
+  plan: free
+
+- type: redis
+  name: jobbox-redis
+  region: frankfurt
+  plan: free
