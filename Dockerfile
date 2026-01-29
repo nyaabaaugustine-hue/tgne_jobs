@@ -34,7 +34,6 @@ RUN mkdir -p \
     storage/logs \
     bootstrap/cache \
     database \
- && touch database/database.sqlite \
  && chown -R www-data:www-data /var/www/html \
  && chmod -R 775 storage bootstrap/cache database
 
@@ -62,11 +61,11 @@ RUN sed -i "s/:80>/:${PORT}>/g" /etc/apache2/sites-available/000-default.conf
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-ENTRYPOINT ["docker-entrypoint.sh"]
-
 # Expose port
-EXPOSE $PORT
+EXPOSE 10000
+
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
-    CMD curl -f http://localhost:$PORT/ || exit 1
+    CMD curl -f http://localhost:10000/ || exit 1
