@@ -83,6 +83,28 @@ php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
 
+# Run any pending migrations
+php artisan migrate:status || {
+  echo "Running migrations..."
+  php artisan migrate --force || {
+    echo "Migration failed, trying to install..."
+    php artisan migrate --force
+  }
+}
+
+# Install demo data if CMS_ENABLE_DEMO_DATA is set to true
+if [ "$CMS_ENABLE_DEMO_DATA" = "true" ] || [ "$CMS_ENABLE_DEMO_DATA" = "1" ]; then
+  echo "Installing demo data..."
+  php artisan cms:dummy-data:install --force
+else
+  echo "Demo data installation skipped (set CMS_ENABLE_DEMO_DATA=true to enable)"
+fi
+
+# Cache configuration after migrations
+php artisan config:cache || true
+php artisan route:cache || true
+php artisan view:cache || true
+
 # Check for Laravel logs
 if [ -f "storage/logs/laravel.log" ]; then
   echo "Laravel log tail:"

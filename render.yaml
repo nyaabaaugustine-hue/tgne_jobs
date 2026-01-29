@@ -36,3 +36,5 @@ services:
         value: sync
       - key: CMS_ENABLE_INSTALLER
         value: false
+      - key: CMS_ENABLE_DEMO_DATA
+        value: true
