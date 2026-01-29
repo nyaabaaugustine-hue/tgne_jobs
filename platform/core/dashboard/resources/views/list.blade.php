@@ -18,23 +18,9 @@
 @section('content')
     <div class="row">
         <div class="col-12">
-            @if \(config\('core.base.general.enable_system_updater'\) && Auth::user\(\)->isSuperUser\(\) \)
-                <v-check-for-updates
-                    check-update-url="{{ route('system.check-update') }}"
-                    v-slot="{ hasNewVersion, message }"
-                    v-cloak
-                >
-                    <x-core::alert
-                        v-if="hasNewVersion"
-                        type="warning"
-                    >
-                        @{{ message }}, please go to <a
-                            href="{{ route('system.updater') }}"
-                            class="text-warning fw-bold"
-                        >System Updater</a> to upgrade to the latest version!
-                    </x-core::alert>
-                </v-check-for-updates>
-            @endif
+            <x-core::alert type="success">
+                Welcome, {{ Auth::user()->first_name ?? Auth::user()->username }}! You are logged in as administrator.
+            </x-core::alert>
         </div>
 
         <div class="col-12">
