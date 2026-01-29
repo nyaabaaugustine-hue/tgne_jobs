@@ -16,20 +16,14 @@ if [ -n "$PORT" ]; then
   sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf
 fi
 
-# Ensure SQLite DB exists
-if [ ! -f database/database.sqlite ]; then
-  echo "Creating SQLite database..."
-  touch database/database.sqlite
-  chown www-data:www-data database/database.sqlite
-  chmod 664 database/database.sqlite
+# Remove SQLite DB file as we're using PostgreSQL
+if [ -f database/database.sqlite ]; then
+  echo "Removing SQLite database file..."
+  rm -f database/database.sqlite
 fi
 
 # Wait a moment for file system to sync
 sleep 2
-
-# Check if database file is writable
-echo "Checking database permissions..."
-ls -la database/database.sqlite
 
 echo "Ensuring storage directories exist..."
 mkdir -p storage/framework/cache
@@ -69,28 +63,32 @@ else
   fi
 fi
 
-# Check if database exists and run migrations
-php artisan migrate:status || {
-  echo "Running migrations..."
-  php artisan migrate --force || {
-    echo "Migration failed, trying to install..."
-    php artisan migrate --force
-  }
+# Check if database is PostgreSQL and wait for connection
+if [ "$DB_CONNECTION" = "pgsql" ]; then
+  echo "Waiting for PostgreSQL connection..."
+  # Wait for PostgreSQL to be ready
+  for i in $(seq 1 30); do
+    if php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'Connected'; } catch (Exception \$e) { echo 'Failed'; }" 2>/dev/null | grep -q "Connected"; then
+      echo "Connected to PostgreSQL"
+      break
+    fi
+    echo "Waiting for PostgreSQL... ($i/30)"
+    sleep 5
+  done
+fi
+
+# Run migrations
+echo "Running migrations..."
+php artisan migrate --force || {
+  echo "Migration failed - checking connection..."
+  php artisan tinker --execute="try { DB::connection()->getPdo(); echo 'DB Connected'; } catch (Exception \$e) { echo 'DB Error: '.\$e->getMessage(); }" || true
+  exit 1
 }
 
 # Cache configuration after migrations
 php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
-
-# Run any pending migrations
-php artisan migrate:status || {
-  echo "Running migrations..."
-  php artisan migrate --force || {
-    echo "Migration failed, trying to install..."
-    php artisan migrate --force
-  }
-}
 
 # Ensure admin user is activated AFTER migrations
 php artisan db:seed --class=AdminUserActivationSeeder --force || {
@@ -100,13 +98,14 @@ php artisan db:seed --class=AdminUserActivationSeeder --force || {
 # Install demo data if CMS_ENABLE_DEMO_DATA is set to true
 if [ "$CMS_ENABLE_DEMO_DATA" = "true" ] || [ "$CMS_ENABLE_DEMO_DATA" = "1" ]; then
   echo "Installing demo data..."
-  # Try the correct CMS install command with demo data
-  php artisan cms:install --demo || {
-    echo "Trying alternative demo installation..."
-    php artisan db:seed || {
-      echo "Demo data installation failed - continuing without demo data"
-    }
-  }
+  # Run all seeders to populate demo data
+  php artisan db:seed --class=CompanySeeder --force || true
+  php artisan db:seed --class=JobSeeder --force || true
+  php artisan db:seed --class=JobCategorySeeder --force || true
+  php artisan db:seed --class=LocationSeeder --force || true
+  php artisan db:seed --class=BlogSeeder --force || true
+  php artisan db:seed --class=JobApplicationSeeder --force || true
+  php artisan db:seed --class=HomePageSeeder --force || true
 else
   echo "Demo data installation skipped (set CMS_ENABLE_DEMO_DATA=true to enable)"
 fi
