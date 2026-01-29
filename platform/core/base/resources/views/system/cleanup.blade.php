@@ -7,14 +7,6 @@
                 class="updater-box"
                 dir="ltr"
             >
-                <x-core::alert type="warning">
-                    <ul class="mb-0 list-unstyled">
-                        <li>{{ trans('core/base::system.cleanup.backup_alert') }}</li>
-                        @if (!config('core.base.general.enabled_cleanup_database', false))
-                            <li class="mt-2">{!! BaseHelper::clean(trans('core/base::system.cleanup.not_enabled_yet')) !!}</li>
-                        @endif
-                    </ul>
-                </x-core::alert>
                 <x-core::card>
                     <x-core::card.header>
                         <x-core::card.title>{{ trans('core/base::system.cleanup.messenger_choose_without_table') }}:</x-core::card.title>

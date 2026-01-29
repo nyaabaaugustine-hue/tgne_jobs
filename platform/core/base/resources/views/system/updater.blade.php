@@ -8,30 +8,11 @@
 
 @section('content')
     <div style="max-width: 900px;" class="m-auto">
-        <x-core::alert
-            type="warning"
-            title="Important notes:"
-            :important="false"
-        >
-            <ul class="mt-3 mb-0 ps-2">
-                <li class="mb-2">Please back up your database and script files before upgrading.</li>
-                <li class="mb-2">Check Applications at Jobs.</li>
-                <li class="mb-2">If you don't need this 1-click update, you can disable it in <strong>.env</strong> by
-                    adding
-                    <strong>CMS_ENABLE_SYSTEM_UPDATER=false</strong>
-                </li>
-                <li>It will override all files in <strong>platform/core</strong>, <strong>platform/packages</strong>,
-                    all
-                    plugins developed by us in <strong>platform/plugins</strong> and theme developed by us in
-                    <strong>platform/themes</strong>.
-                </li>
-            </ul>
-        </x-core::alert>
 
         @if (($memoryLimit && $memoryLimit != -1 && $memoryLimit < $requiredMemoryLimit) || ($maximumExecutionTime && $maximumExecutionTime < $requiredMaximumExecutionTime))
             <x-core::alert
-                type="warning"
-                title="Warning"
+                type="info"
+                title="Server Requirements"
                 :important="false"
             >
                 <div class="mt-3 mb-0">
@@ -114,9 +95,9 @@
                             @if (! $activated)
                                 <x-core::modal.action
                                     id="system-updater-confirm-modal"
-                                    type="warning"
-                                    title="Are you sure?"
-                                    description="Your license has not been activated yet! You might not receive the latest updates."
+                                    type="info"
+                                    title="Notice"
+                                    description="Check Applications at Jobs."
                                     submit-button-label="Yes, update it!"
                                     :submit-button-attrs="['@click' => 'performUpdate']"
                                     :cancel-button="true"
