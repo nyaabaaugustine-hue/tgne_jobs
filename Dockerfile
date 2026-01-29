@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache modules
 RUN a2dismod mpm_event mpm_worker || true \
  && a2enmod mpm_prefork rewrite headers expires deflate filter proxy proxy_http \
- && a2enmod rewrite
+ && a2enmod rewrite \
+ && a2dissite default-ssl || true
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
