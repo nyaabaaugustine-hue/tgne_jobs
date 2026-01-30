@@ -91,31 +91,41 @@ php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
 
-# Ensure admin user is activated AFTER migrations
-php artisan db:seed --class=AdminUserActivationSeeder --force || {
-  echo "Admin user activation failed"
-}
+# Only run initial setup (admin activation, demo data) if it hasn't been done yet
+if [ ! -f /tmp/setup_completed ]; then
+  echo "Running initial setup (first time only)..."
+  
+  # Ensure admin user is activated AFTER migrations
+  php artisan db:seed --class=AdminUserActivationSeeder --force || {
+    echo "Admin user activation failed"
+  }
 
-# Install demo data
-echo "Installing demo data..."
-# Run all seeders to populate demo data
-php artisan db:seed --class=CompanySeeder --force || true
-php artisan db:seed --class=JobSeeder --force || true
-php artisan db:seed --class=JobCategorySeeder --force || true
-php artisan db:seed --class=LocationSeeder --force || true
-php artisan db:seed --class=BlogSeeder --force || true
-php artisan db:seed --class=JobApplicationSeeder --force || true
-php artisan db:seed --class=HomePageSeeder --force || true
+  # Install demo data only on first run
+  if [ "$CMS_ENABLE_DEMO_DATA" = "true" ] || [ "$CMS_ENABLE_DEMO_DATA" = "1" ]; then
+    echo "Installing demo data..."
+    # Run all seeders to populate demo data
+    php artisan db:seed --class=CompanySeeder --force || true
+    php artisan db:seed --class=JobSeeder --force || true
+    php artisan db:seed --class=JobCategorySeeder --force || true
+    php artisan db:seed --class=LocationSeeder --force || true
+    php artisan db:seed --class=BlogSeeder --force || true
+    php artisan db:seed --class=JobApplicationSeeder --force || true
+    php artisan db:seed --class=HomePageSeeder --force || true
+  else
+    echo "Demo data installation skipped (set CMS_ENABLE_DEMO_DATA=true to enable)"
+  fi
+
+  # Mark setup as completed
+  touch /tmp/setup_completed
+  echo "Initial setup completed!"
+else
+  echo "Setup already completed, skipping initial setup..."
+fi
 
 # Cache configuration after migrations
 php artisan config:cache || true
 php artisan route:cache || true
 php artisan view:cache || true
-
-# Ensure admin user is activated
-php artisan db:seed --class=AdminUserActivationSeeder --force || {
-  echo "Admin user activation failed"
-}
 
 # Check for Laravel logs
 if [ -f "storage/logs/laravel.log" ]; then
