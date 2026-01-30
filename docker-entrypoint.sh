@@ -3,24 +3,19 @@ set -e
 
 echo "=== Starting docker-entrypoint.sh ==="
 
+# Basic setup first
 echo "Setting up file permissions..."
-# Ensure proper ownership
 chown -R www-data:www-data /var/www/html
 chmod -R 755 /var/www/html
 
 # Configure Apache for Render's port
-if [ -n "$PORT" ]; then
-  echo "Configuring Apache for Render port: $PORT"
-  sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf
-  sed -i "s/:80>/:$PORT>/g" /etc/apache2/sites-available/000-default.conf
-  sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf
-else
-  # Default to port 10000 if not set
-  PORT=10000
-  echo "Using default port: $PORT"
-  sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf
-  sed -i "s/:80>/:$PORT>/g" /etc/apache2/sites-available/000-default.conf
-fi
+PORT=${PORT:-10000}
+echo "Configuring Apache for Render port: $PORT"
+sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf
+sed -i "s/:80>/:$PORT>/g" /etc/apache2/sites-available/000-default.conf
+sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf
+
+echo "Apache configuration updated"
 
 # Remove SQLite DB file as we're using PostgreSQL
 if [ -f database/database.sqlite ]; then

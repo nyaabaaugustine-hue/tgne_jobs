@@ -51,17 +51,16 @@ RUN sed -i 's/AllowOverride None/AllowOverride All/g' \
     /etc/apache2/apache2.conf
 RUN echo 'LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so' > /etc/apache2/mods-enabled/rewrite.load
 
-# Configure Apache to listen on Render's port
-ENV PORT 10000
-RUN sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf
+# Configure Apache to listen on port 10000
+RUN sed -i "s/Listen 80/Listen 10000/g" /etc/apache2/ports.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-RUN sed -i "s/:80>/:${PORT}>/g" /etc/apache2/sites-available/000-default.conf
+RUN sed -i "s/:80>/:10000>/g" /etc/apache2/sites-available/000-default.conf
 
 # Copy and enable the entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Expose port
+# Expose port 10000
 EXPOSE 10000
 
 ENTRYPOINT ["docker-entrypoint.sh"]
