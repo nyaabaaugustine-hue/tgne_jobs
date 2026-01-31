@@ -1,45 +1,38 @@
 services:
   - type: web
-    name: jobbox-app
+    name: jobbox
     env: php
-    plan: free
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      cp .env.production .env
-      chmod +x deploy-scripts/setup-database.sh
-      ./deploy-scripts/setup-database.sh
-    startCommand: |
-      php artisan serve --host=0.0.0.0 --port=$PORT
+    buildCommand: "composer install --no-dev --optimize-autoloader && php artisan config:cache"
+    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
-      - key: APP_KEY
-        value: base64:rPuoSYmmc3nw8VyCCJn1k3B/1LjbOXscil3PXeI57sM=
-      - key: APP_URL
-        value: https://jobbox-app.onrender.com
-      - key: LOG_CHANNEL
-        value: stderr
-      - key: LOG_LEVEL
-        value: info
-      - key: SESSION_DRIVER
-        value: database
-      - key: CACHE_DRIVER
-        value: database
-      - key: QUEUE_CONNECTION
-        value: database
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        value: dpg-d5tq7mili9vc73a0lhe0-a
+        fromDatabase:
+          name: jobbox-db
+          property: host
       - key: DB_PORT
-        value: 5432
+        fromDatabase:
+          name: jobbox-db
+          property: port
       - key: DB_DATABASE
-        value: tgne_jobs
+        fromDatabase:
+          name: jobbox-db
+          property: database
       - key: DB_USERNAME
-        value: tgne_jobs_user
+        fromDatabase:
+          name: jobbox-db
+          property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: tgne_jobs
-          property: connectionString
+          name: jobbox-db
+          property: password
+    autoDeploy: true
+
+databases:
+  - name: jobbox-db
+    ipAllowList: []
