@@ -48,7 +48,7 @@ RUN sed -i 's/AllowOverride None/AllowOverride All/g' \
     /etc/apache2/apache2.conf
 
 # Health check endpoint
-RUN echo "<?php echo 'OK';" > public/health.php
+RUN echo "<?php http_response_code(200); echo 'OK';" > public/health
 
 # Expose port 80 (Northflank default)
 EXPOSE 80
