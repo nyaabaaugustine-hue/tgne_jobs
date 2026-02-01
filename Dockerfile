@@ -87,9 +87,8 @@ RUN php artisan key:generate --force
 # Create storage link
 RUN rm -f public/storage && php artisan storage:link
 
-# Cache Laravel configuration
+# Cache Laravel configuration (skip route cache due to closures)
 RUN php artisan config:cache || echo "Config cache skipped" \
-    && php artisan route:cache || echo "Route cache skipped" \
     && php artisan view:cache || echo "View cache skipped"
 
 # Copy Apache configuration
