@@ -9,6 +9,9 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    libpq-dev \
+    postgresql-client \
+    default-mysql-client \
     zip \
     unzip \
     sqlite3 \
@@ -20,6 +23,10 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install -j$(nproc) \
         pdo \
         pdo_sqlite \
+        pdo_pgsql \
+        pgsql \
+        pdo_mysql \
+        mysqli \
         mbstring \
         exif \
         pcntl \
@@ -46,6 +53,9 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Install PHP dependencies with platform requirements ignored for missing extensions
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Verify PostgreSQL extensions are installed
+RUN echo "=== VERIFYING PHP EXTENSIONS ===" && php -m | grep -E "(pdo_pgsql|pgsql)" && echo "✅ PostgreSQL extensions found" || (echo "❌ PostgreSQL extensions missing!" && exit 1)
 
 # Set up database with demo data
 RUN mkdir -p database && \

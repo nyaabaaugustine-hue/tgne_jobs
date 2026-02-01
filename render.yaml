@@ -24,17 +24,15 @@ services:
       - key: LOG_LEVEL
         value: debug
       - key: DB_CONNECTION
-        value: sqlite
-      - key: DB_DATABASE
-        value: /var/www/html/database/database.sqlite
-      - key: DB_FOREIGN_KEYS
-        value: true
+        value: pgsql
+      - key: SESSION_DRIVER
+        value: database
       - key: CACHE_DRIVER
         value: file
       - key: CACHE_STORE
         value: file
       - key: SESSION_DRIVER
-        value: file
+        value: database
       - key: QUEUE_CONNECTION
         value: sync
       - key: BROADCAST_DRIVER
