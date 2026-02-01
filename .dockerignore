@@ -1,95 +1,51 @@
-# Ignore development files
-.env
+# Bulletproof .dockerignore - Only ignore what's absolutely necessary
+.git
+.gitignore
+README.md
+Dockerfile*
+docker-compose*.yml
+render*.yaml
+.dockerignore
+
+# Development files
 .env.local
 .env.development
 .env.test
-.env.production
 
-# Ignore git
-.git
-.gitignore
-
-# Ignore node modules and build artifacts
+# Node modules
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Ignore IDE files
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Ignore OS files
+# OS files
 .DS_Store
 Thumbs.db
 
-# Ignore logs
-storage/logs/*
-!storage/logs/.gitkeep
-
-# Ignore cache
-bootstrap/cache/*
-!bootstrap/cache/.gitkeep
-
-# Ignore test files
+# Test files
 tests/
 phpunit.xml
 .phpunit.result.cache
 
-# Ignore documentation
-README.md
-*.md
-!DEPLOYMENT_GUIDE.md
-
-# Ignore deployment scripts (not needed in container)
-deploy*.sh
-test-*.sh
-verify-*.php
-create_*.php
-check_*.php
-debug_*.php
-fix_*.php
-update_*.php
-copy_*.php
-move_*.php
-list_*.php
-setup_*.php
-export_*.php
-download_*.php
-activate_*.php
-test_*.php
-
-# Ignore backup files
+# Temporary files
+*.tmp
+*.temp
 *.backup
 *.bak
-*.tmp
 
-# Ignore Docker files (avoid recursion)
-Dockerfile*
-docker-compose*.yml
-.dockerignore
+# Build artifacts
+*.zip
 
-# Ignore render configs (not needed in container)
-render*.yaml
-northflank.json
-
-# Ignore import files
-*.csv
-*.sql
-*.json
-!composer.json
-!composer.lock
-
-# Ignore manual directories
-manual_images/
-images_jobs/
-deployment_images_backup/
-attached_assets/
-
-# Keep essential files
-!database/production_database.sqlite
-!database/database.sqlite
-!storage/*/
-!public/storage/
+# Keep ALL essential files including:
+# - .env.example (needed for production)
+# - database/ (with demo data)
+# - storage/ (with images)
+# - public/storage/ (web accessible images)
+# - platform/ (required for composer)
+# - All PHP files and dependencies
