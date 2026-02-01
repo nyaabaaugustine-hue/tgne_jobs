@@ -225,7 +225,7 @@ class Job extends BaseModel
                     ->on('jb_applications.job_id', '=', 'jb_jobs.id')
                     ->where('jb_applications.account_id', $accountId);
             })
-            ->addSelect(DB::raw('IF(jb_applications.job_id IS NULL, 0, jb_applications.job_id) AS is_applied'))
+            ->addSelect(DB::raw('CASE WHEN jb_applications.job_id IS NULL THEN 0 ELSE jb_applications.job_id END AS is_applied'))
             ->addSelect('jb_jobs.*');
     }
 
@@ -243,7 +243,7 @@ class Job extends BaseModel
                     ->on('jb_saved_jobs.job_id', '=', 'jb_jobs.id')
                     ->where('jb_saved_jobs.account_id', $accountId);
             })
-            ->addSelect(DB::raw('IF(jb_saved_jobs.job_id IS NULL, 0, jb_saved_jobs.job_id) AS is_saved'))
+            ->addSelect(DB::raw('CASE WHEN jb_saved_jobs.job_id IS NULL THEN 0 ELSE jb_saved_jobs.job_id END AS is_saved'))
             ->addSelect('jb_jobs.*');
     }
 
