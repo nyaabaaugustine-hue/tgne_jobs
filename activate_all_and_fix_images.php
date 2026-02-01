@@ -49,11 +49,13 @@ try {
     if (Schema::hasTable('jb_accounts')) {
         echo "4. 👥 Activating all accounts...\n";
         $accountUpdates = DB::table('jb_accounts')->update([
-            'is_active' => 1,
             'confirmed_at' => now(),
+            'is_featured' => 1,
+            'is_public_profile' => 1,
+            'available_for_hiring' => 1,
             'updated_at' => now()
         ]);
-        echo "   ✅ Activated $accountUpdates accounts (active + confirmed)\n";
+        echo "   ✅ Activated $accountUpdates accounts (confirmed + featured + public)\n";
         $totalFixed += $accountUpdates;
     }
     
@@ -176,7 +178,7 @@ try {
     }
     
     if (Schema::hasTable('jb_accounts')) {
-        echo "✅ Active accounts: " . DB::table('jb_accounts')->where('is_active', 1)->count() . "\n";
+        echo "✅ Confirmed accounts: " . DB::table('jb_accounts')->whereNotNull('confirmed_at')->count() . "\n";
     }
     
     if (Schema::hasTable('media_files')) {
