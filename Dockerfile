@@ -61,6 +61,11 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
+# Debug: List database files
+RUN echo "=== DATABASE FILES DEBUG ===" && \
+    ls -la database/ && \
+    echo "=== END DEBUG ==="
+
 # Create .env from example (remove any existing .env)
 RUN rm -f .env && cp .env.example .env
 
@@ -74,8 +79,15 @@ RUN mkdir -p \
     bootstrap/cache \
     public/storage
 
-# Copy production database
-RUN cp database/production_database.sqlite database/database.sqlite && \
+# Copy production database with error handling
+RUN if [ -f database/production_database.sqlite ]; then \
+        cp database/production_database.sqlite database/database.sqlite; \
+    elif [ -f database/database.sqlite ]; then \
+        echo "Using existing database.sqlite"; \
+    else \
+        echo "Creating empty database"; \
+        touch database/database.sqlite; \
+    fi && \
     chmod 664 database/database.sqlite
 
 # Set permissions

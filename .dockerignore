@@ -1,10 +1,12 @@
-# Bulletproof .dockerignore - Only ignore what's absolutely necessary
+# Bulletproof .dockerignore - Include ALL essential files
 .git
 .gitignore
 README.md
-Dockerfile*
+Dockerfile.old
+Dockerfile.simple
 docker-compose*.yml
-render*.yaml
+render-old.yaml
+render-native.yaml
 .dockerignore
 
 # Development files
@@ -42,10 +44,26 @@ phpunit.xml
 # Build artifacts
 *.zip
 
-# Keep ALL essential files including:
-# - .env.example (needed for production)
-# - database/ (with demo data)
-# - storage/ (with images)
-# - public/storage/ (web accessible images)
-# - platform/ (required for composer)
-# - All PHP files and dependencies
+# EXPLICITLY INCLUDE ESSENTIAL FILES:
+# Keep database files
+!database/
+!database/*.sqlite
+!database/production_database.sqlite
+
+# Keep storage directories
+!storage/
+!storage/*/
+!storage/*/*.jpg
+!storage/*/*.png
+!storage/*/*.gif
+!storage/*/*.svg
+
+# Keep platform directories
+!platform/
+!platform/*/
+
+# Keep all PHP and config files
+!*.php
+!*.json
+!*.lock
+!.env.example
