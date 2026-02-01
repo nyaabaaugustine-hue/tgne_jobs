@@ -51,8 +51,9 @@ RUN a2enmod rewrite headers
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first for better Docker layer caching
+# Copy composer files and platform directory for dependencies
 COPY composer.json composer.lock ./
+COPY platform/ ./platform/
 
 # Install composer dependencies first
 RUN composer install \
@@ -62,7 +63,7 @@ RUN composer install \
     --prefer-dist \
     --no-scripts
 
-# Copy all application files
+# Copy all remaining application files
 COPY . .
 
 # Ensure production database is copied
