@@ -1,4 +1,4 @@
-# Dockerfile for Render deployment with demo data
+# Dockerfile for JobBox with all required extensions
 FROM php:8.3-apache
 
 # Install system dependencies and PHP extensions in correct order
@@ -37,15 +37,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
-COPY . .
-
-# Set memory limit for composer
+# Set environment variables for composer
 ENV COMPOSER_MEMORY_LIMIT=-1
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Install PHP dependencies with platform requirements ignored for missing extensions
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+
+# Install dependencies (extensions are now available)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+# Copy application files
+COPY . .
 
 # Set up database with demo data
 RUN mkdir -p database && \

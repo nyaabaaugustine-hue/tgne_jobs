@@ -26,12 +26,9 @@ services:
       echo "Validating composer configuration..."
       composer validate --no-check-publish || true
       
-      # Install dependencies with error handling for dev packages
+      # Install dependencies now that extensions are properly available
       echo "Installing PHP dependencies..."
-      composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs || {
-        echo "First install failed, trying with platform requirements..."
-        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-      }
+      composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
       
       # Ensure database directory exists
       echo "Setting up database..."

@@ -12,7 +12,10 @@ composer clear-cache || true
 
 # Install dependencies with verbose output and error handling
 echo "Installing PHP dependencies..."
-composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --verbose
+composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-req=ext-zip --ignore-platform-req=ext-calendar || {
+    echo "First install failed, trying with all platform requirements ignored..."
+    composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs
+}
 
 # Ensure database directory exists
 echo "Setting up database..."

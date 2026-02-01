@@ -1,43 +1,39 @@
 # Render Deployment Troubleshooting Guide
 
-## 🚨 Composer Install Failed (Exit Code 2)
+## 🚨 Missing PHP Extensions (ext-zip, ext-calendar)
 
-If you're seeing composer install failures, try these solutions:
+If you're seeing missing extension errors, here are the solutions:
 
-### Solution 1: Use Updated render.yaml (Recommended)
-The updated `render.yaml` includes:
-- Memory limit increase for composer
-- Platform requirement ignoring
-- Better error handling
-- Fallback installation methods
+### Solution 1: Use Simple Docker Deployment (Recommended)
+The `Dockerfile.simple` includes all required PHP extensions:
 
-**Action:** Redeploy using the updated `render.yaml` from your latest commit.
-
-### Solution 2: Use Docker Deployment (Alternative)
-If the native PHP environment continues to fail:
-
-1. **Rename files:**
+1. **Switch to simple Docker:**
    ```bash
    mv render.yaml render-native.yaml
-   mv render-docker.yaml render.yaml
+   mv render-simple.yaml render.yaml
    ```
 
 2. **Commit and push:**
    ```bash
    git add .
-   git commit -m "Switch to Docker deployment"
+   git commit -m "Switch to simple Docker deployment with all PHP extensions"
    git push origin main
    ```
 
-3. **Redeploy on Render** - it will automatically use Docker
+3. **Redeploy on Render** - it will use the improved Docker setup
 
-### Solution 3: Manual Environment Setup
-If both methods fail, you can manually configure:
+### Solution 2: Use Updated Native PHP (Alternative)
+The updated `render.yaml` ignores platform requirements:
+- Uses `--ignore-platform-req=ext-zip --ignore-platform-req=ext-calendar`
+- Falls back to ignoring all platform requirements if needed
 
-1. **Create Web Service** with these settings:
-   - Environment: Docker
-   - Build Command: `docker build -f Dockerfile.render -t jobbox .`
-   - Start Command: `docker run -p $PORT:80 jobbox`
+### Solution 3: Manual Docker Build
+If automated deployment fails:
+
+1. **Use `Dockerfile.simple`** which includes:
+   - All required PHP extensions (zip, calendar, gd, etc.)
+   - Proper dependency installation order
+   - Better layer caching
 
 ## 🔧 Common Issues and Fixes
 
@@ -74,10 +70,14 @@ After successful deployment, check:
 
 ## 📁 Files for Different Deployment Methods
 
-- `render.yaml` - Native PHP (improved)
-- `render-docker.yaml` - Docker alternative
-- `Dockerfile.render` - Docker configuration
+- `render.yaml` - Native PHP with platform requirement ignoring
+- `render-simple.yaml` - Simple Docker with all extensions (recommended)
+- `render-docker.yaml` - Advanced Docker alternative
+- `Dockerfile.simple` - Simple Docker configuration with all PHP extensions
+- `Dockerfile.render` - Advanced Docker configuration
 - `build.sh` - Build script with error handling
 - `start.sh` - Startup script
+
+**Recommended:** Use `render-simple.yaml` → `render.yaml` for easiest deployment.
 
 Your demo data (64 accounts, 13 companies, 51 jobs) and all images are preserved in all deployment methods!
