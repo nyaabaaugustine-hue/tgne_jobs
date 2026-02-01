@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: jobbox-docker
+    env: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile.render
+    envVars:
+      - key: APP_NAME
+        value: JobBox
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://jobbox-docker.onrender.com
+      - key: LOG_CHANNEL
+        value: errorlog
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        value: noreply@jobbox.onrender.com
+      - key: MAIL_FROM_NAME
+        value: JobBox
+      - key: CMS_LICENSE_VERIFY_DISABLE
+        value: true
+      - key: CMS_LICENSE_ACTIVATED
+        value: true

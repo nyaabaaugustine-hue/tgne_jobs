@@ -2,11 +2,20 @@
 
 echo "=== JobBox Build with Demo Data Preservation ==="
 
-# Install dependencies
-echo "Installing dependencies..."
-composer install --no-dev --optimize-autoloader
+# Update composer to latest version
+echo "Updating composer..."
+composer self-update --2 || true
+
+# Clear any existing composer cache
+echo "Clearing composer cache..."
+composer clear-cache || true
+
+# Install dependencies with verbose output and error handling
+echo "Installing PHP dependencies..."
+composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --verbose
 
 # Ensure database directory exists
+echo "Setting up database..."
 mkdir -p database
 
 # Preserve demo data
@@ -25,29 +34,32 @@ mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p bootstrap/cache
+mkdir -p public/storage
 
 # Set permissions
 echo "Setting permissions..."
 chmod -R 775 storage bootstrap/cache
 chmod 664 database/database.sqlite
 
-# Create storage link
+# Create storage link (may fail in build environment)
 echo "Creating storage link..."
-php artisan storage:link
+php artisan storage:link || echo "Storage link will be created at startup"
 
-# Cache configuration
+# Generate app key if needed
+echo "Generating application key..."
+php artisan key:generate --force || echo "Key generation will happen at startup"
+
+# Cache configuration (may fail without proper env)
 echo "Caching configuration..."
-php artisan config:cache
-php artisan route:cache  
-php artisan view:cache
+php artisan config:cache || echo "Config caching will happen at startup"
 
 # Verify demo data
 echo "Verifying demo data..."
-ACCOUNT_COUNT=$(php artisan tinker --execute="echo DB::table('jb_accounts')->count();")
-COMPANY_COUNT=$(php artisan tinker --execute="echo DB::table('jb_companies')->count();")
-JOB_COUNT=$(php artisan tinker --execute="echo DB::table('jb_jobs')->count();")
+ACCOUNT_COUNT=$(php artisan tinker --execute="echo DB::table('jb_accounts')->count();" 2>/dev/null || echo "Unknown")
+COMPANY_COUNT=$(php artisan tinker --execute="echo DB::table('jb_companies')->count();" 2>/dev/null || echo "Unknown")
+JOB_COUNT=$(php artisan tinker --execute="echo DB::table('jb_jobs')->count();" 2>/dev/null || echo "Unknown")
 
-echo "Demo data verified:"
+echo "Demo data status:"
 echo "- Accounts: $ACCOUNT_COUNT"
 echo "- Companies: $COMPANY_COUNT"
 echo "- Jobs: $JOB_COUNT"

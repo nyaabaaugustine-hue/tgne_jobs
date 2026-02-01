@@ -3,11 +3,38 @@ services:
     name: jobbox
     env: php
     plan: starter
+services:
+  - type: web
+    name: jobbox
+    env: php
+    plan: starter
     buildCommand: |
-      echo "Starting build with demo data preservation..."
-      composer install --no-dev --optimize-autoloader
+      echo "=== JobBox Build with Demo Data Preservation ==="
+      
+      # Set memory limit for composer
+      export COMPOSER_MEMORY_LIMIT=-1
+      
+      # Update composer to latest version
+      echo "Updating composer..."
+      composer self-update --2 || true
+      
+      # Clear any existing composer cache
+      echo "Clearing composer cache..."
+      composer clear-cache || true
+      
+      # Validate composer files
+      echo "Validating composer configuration..."
+      composer validate --no-check-publish || true
+      
+      # Install dependencies with error handling for dev packages
+      echo "Installing PHP dependencies..."
+      composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --ignore-platform-reqs || {
+        echo "First install failed, trying with platform requirements..."
+        composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+      }
       
       # Ensure database directory exists
+      echo "Setting up database..."
       mkdir -p database
       
       # Copy production database if it doesn't exist
@@ -20,6 +47,31 @@ services:
       chmod 664 database/database.sqlite
       
       # Create storage directories
+      echo "Creating storage directories..."
+      mkdir -p storage/logs
+      mkdir -p storage/framework/cache
+      mkdir -p storage/framework/sessions
+      mkdir -p storage/framework/views
+      mkdir -p bootstrap/cache
+      mkdir -p public/storage
+      
+      # Set permissions
+      echo "Setting permissions..."
+      chmod -R 775 storage bootstrap/cache
+      
+      echo "=== Build completed with demo data preserved! ==="
+      
+    startCommand: |
+      echo "=== Starting JobBox with Demo Data ==="
+      
+      # Ensure database exists with demo data
+      if [ ! -f database/database.sqlite ]; then
+        echo "Restoring demo database..."
+        cp database/production_database.sqlite database/database.sqlite
+        chmod 664 database/database.sqlite
+      fi
+      
+      # Ensure storage directories exist
       mkdir -p storage/logs
       mkdir -p storage/framework/cache
       mkdir -p storage/framework/sessions
@@ -28,33 +80,33 @@ services:
       
       # Set permissions
       chmod -R 775 storage bootstrap/cache
+      chmod 664 database/database.sqlite
       
-      # Create storage link
-      php artisan storage:link
+      # Ensure storage link exists
+      if [ ! -L public/storage ]; then
+        echo "Creating storage link..."
+        php artisan storage:link
+      fi
       
-      # Cache configuration
+      # Generate app key if needed
+      if [ -z "$APP_KEY" ] || [ "$APP_KEY" = "base64:" ]; then
+        echo "Generating application key..."
+        php artisan key:generate --force
+      fi
+      
+      # Cache configuration for production
+      echo "Caching configuration..."
       php artisan config:cache
       php artisan route:cache
       php artisan view:cache
       
-      echo "Build completed with demo data preserved!"
+      # Verify demo data is present
+      echo "Verifying demo data..."
+      ACCOUNT_COUNT=$(php artisan tinker --execute="echo DB::table('jb_accounts')->count();" 2>/dev/null || echo "0")
+      echo "Starting with $ACCOUNT_COUNT demo accounts"
       
-    startCommand: |
-      echo "Starting JobBox with demo data..."
-      
-      # Ensure database exists
-      if [ ! -f database/database.sqlite ]; then
-        echo "Restoring demo database..."
-        cp database/production_database.sqlite database/database.sqlite
-        chmod 664 database/database.sqlite
-      fi
-      
-      # Ensure storage link exists
-      if [ ! -L public/storage ]; then
-        php artisan storage:link
-      fi
-      
-      # Start application
+      # Start the application
+      echo "Starting JobBox application on port $PORT..."
       php artisan serve --host=0.0.0.0 --port=$PORT
       
     envVars:
@@ -98,3 +150,7 @@ services:
         value: true
       - key: CMS_LICENSE_ACTIVATED
         value: true
+      - key: COMPOSER_MEMORY_LIMIT
+        value: -1
+      - key: COMPOSER_ALLOW_SUPERUSER
+        value: 1
