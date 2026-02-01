@@ -79,13 +79,14 @@ RUN mkdir -p \
     bootstrap/cache \
     public/storage
 
-# Copy production database with error handling
+# Copy production database with bulletproof error handling
 RUN if [ -f database/production_database.sqlite ]; then \
+        echo "Using production database with demo data"; \
         cp database/production_database.sqlite database/database.sqlite; \
     elif [ -f database/database.sqlite ]; then \
         echo "Using existing database.sqlite"; \
     else \
-        echo "Creating empty database"; \
+        echo "Creating new database file"; \
         touch database/database.sqlite; \
     fi && \
     chmod 664 database/database.sqlite
