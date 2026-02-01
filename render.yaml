@@ -2,37 +2,99 @@ services:
   - type: web
     name: jobbox
     env: php
-    buildCommand: "composer install --no-dev --optimize-autoloader && php artisan config:cache"
-    startCommand: "php artisan serve --host=0.0.0.0 --port=$PORT"
+    plan: starter
+    buildCommand: |
+      echo "Starting build with demo data preservation..."
+      composer install --no-dev --optimize-autoloader
+      
+      # Ensure database directory exists
+      mkdir -p database
+      
+      # Copy production database if it doesn't exist
+      if [ ! -f database/database.sqlite ]; then
+        echo "Copying production database with demo data..."
+        cp database/production_database.sqlite database/database.sqlite
+      fi
+      
+      # Set database permissions
+      chmod 664 database/database.sqlite
+      
+      # Create storage directories
+      mkdir -p storage/logs
+      mkdir -p storage/framework/cache
+      mkdir -p storage/framework/sessions
+      mkdir -p storage/framework/views
+      mkdir -p bootstrap/cache
+      
+      # Set permissions
+      chmod -R 775 storage bootstrap/cache
+      
+      # Create storage link
+      php artisan storage:link
+      
+      # Cache configuration
+      php artisan config:cache
+      php artisan route:cache
+      php artisan view:cache
+      
+      echo "Build completed with demo data preserved!"
+      
+    startCommand: |
+      echo "Starting JobBox with demo data..."
+      
+      # Ensure database exists
+      if [ ! -f database/database.sqlite ]; then
+        echo "Restoring demo database..."
+        cp database/production_database.sqlite database/database.sqlite
+        chmod 664 database/database.sqlite
+      fi
+      
+      # Ensure storage link exists
+      if [ ! -L public/storage ]; then
+        php artisan storage:link
+      fi
+      
+      # Start application
+      php artisan serve --host=0.0.0.0 --port=$PORT
+      
     envVars:
+      - key: APP_NAME
+        value: JobBox
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        value: https://jobbox.onrender.com
+      - key: LOG_CHANNEL
+        value: errorlog
+      - key: LOG_LEVEL
+        value: error
       - key: DB_CONNECTION
-        value: pgsql
-      - key: DB_HOST
-        fromDatabase:
-          name: jobbox-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: jobbox-db
-          property: port
+        value: sqlite
       - key: DB_DATABASE
-        fromDatabase:
-          name: jobbox-db
-          property: database
-      - key: DB_USERNAME
-        fromDatabase:
-          name: jobbox-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: jobbox-db
-          property: password
-    autoDeploy: true
-
-databases:
-  - name: jobbox-db
-    ipAllowList: []
+        value: /opt/render/project/src/database/database.sqlite
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        value: noreply@jobbox.onrender.com
+      - key: MAIL_FROM_NAME
+        value: JobBox
+      - key: CMS_LICENSE_VERIFY_DISABLE
+        value: true
+      - key: CMS_LICENSE_ACTIVATED
+        value: true

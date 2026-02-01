@@ -1,70 +1,54 @@
-FROM php:8.4-apache
+FROM php:8.2-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git curl zip unzip \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    libonig-dev libxml2-dev libzip-dev \
-    libsqlite3-dev libicu-dev libpq-dev \
-&& docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
-    pdo_mysql pdo_sqlite pdo_pgsql mbstring exif pcntl bcmath gd xml zip intl calendar \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    sqlite3 \
+    libsqlite3-dev
 
-# Enable Apache modules
-RUN a2dismod mpm_event mpm_worker || true \
- && a2enmod mpm_prefork rewrite headers expires deflate filter proxy proxy_http \
- && a2enmod rewrite \
- && a2dissite default-ssl || true
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd
 
-WORKDIR /var/www/html
+# Get latest Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application files
-COPY . .
+# Set working directory
+WORKDIR /var/www
 
-# Create necessary directories and set permissions
-RUN mkdir -p \
-    storage/framework/cache \
-    storage/framework/sessions \
-    storage/framework/views \
-    storage/logs \
-    bootstrap/cache \
-    database \
- && chown -R www-data:www-data /var/www/html \
- && chmod -R 775 storage bootstrap/cache database
+# Copy existing application directory contents
+COPY . /var/www
 
-# Install PHP dependencies
-RUN composer install \
-    --no-dev \
-    --prefer-dist \
-    --optimize-autoloader \
-    --no-interaction
+# Copy existing application directory permissions
+COPY --chown=www-data:www-data . /var/www
 
-# Set up Apache document root and allow .htaccess overrides
-RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' \
-    /etc/apache2/sites-available/000-default.conf
-RUN sed -i 's/AllowOverride None/AllowOverride All/g' \
-    /etc/apache2/apache2.conf
-RUN echo 'LoadModule rewrite_module /usr/lib/apache2/modules/mod_rewrite.so' > /etc/apache2/mods-enabled/rewrite.load
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader
 
-# Configure Apache to listen on port 10000
-RUN sed -i "s/Listen 80/Listen 10000/g" /etc/apache2/ports.conf
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-RUN sed -i "s/:80>/:10000>/g" /etc/apache2/sites-available/000-default.conf
+# Set permissions
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Copy and enable the entrypoint script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+# Configure Apache
+RUN a2enmod rewrite
+COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
-# Expose port 10000
-EXPOSE 10000
+# Create storage link
+RUN php artisan storage:link
 
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Cache configuration
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
 
-# Healthcheck
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
-    CMD curl -f http://localhost:10000/ || exit 1
+EXPOSE 80
+
+CMD ["apache2-foreground"]

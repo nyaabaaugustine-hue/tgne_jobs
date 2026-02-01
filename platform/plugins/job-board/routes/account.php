@@ -65,6 +65,7 @@ Route::group(['namespace' => 'Botble\JobBoard\Http\Controllers'], function (): v
                 });
             });
 
+            /*
             Route::group([
                 'middleware' => [setting('verify_account_email', 0) ? 'account.guest' : 'account'],
             ], function (): void {
@@ -81,6 +82,7 @@ Route::group(['namespace' => 'Botble\JobBoard\Http\Controllers'], function (): v
                     });
                 });
             });
+            */
         });
 
         Route::group([
