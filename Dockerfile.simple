@@ -32,6 +32,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Verify extensions are installed
+RUN php -m | grep -E "(zip|calendar|gd|pdo_sqlite)" || exit 1
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -42,17 +45,11 @@ WORKDIR /var/www/html
 ENV COMPOSER_MEMORY_LIMIT=-1
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
-# Copy composer files first for better caching
-COPY composer.json composer.lock ./
-
-# Copy platform directories needed for composer (with error handling)
-COPY platform/ ./platform/ || echo "Platform directory copy failed"
-
-# Install dependencies (extensions are now available)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-# Copy rest of application files
+# Copy ALL application files first
 COPY . .
+
+# Install dependencies with platform requirements check
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
 # Remove .env from production - it should be created from .env.example
 RUN rm -f .env && cp .env.example .env
