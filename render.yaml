@@ -3,7 +3,7 @@ services:
     name: jobbox-bulletproof
     env: docker
     plan: starter
-    dockerfilePath: ./Dockerfile.bulletproof
+    # dockerfilePath: ./Dockerfile (default, no need to specify)
     envVars:
       - key: APP_NAME
         value: JobBox
