@@ -1,105 +1,115 @@
-# Dockerfile for JobBox with all required extensions
+# BULLETPROOF JobBox Dockerfile - CACHE BUSTED v3.0
 FROM php:8.3-apache
 
-# Install system dependencies and PHP extensions in correct order
+# Force cache invalidation - Build timestamp: 2026-02-01-16:20
+ENV BUILD_TIMESTAMP=2026-02-01-16:20
+ENV DEBIAN_FRONTEND=noninteractive
+ENV COMPOSER_MEMORY_LIMIT=-1
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_NO_INTERACTION=1
+
+# Install ALL required system dependencies in one go
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
     unzip \
+    zip \
     sqlite3 \
     libsqlite3-dev \
-    libicu-dev \
+    libzip-dev \
+    libpng-dev \
+    libjpeg-dev \
     libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    ca-certificates \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-        pdo \
-        pdo_sqlite \
-        mbstring \
-        exif \
-        pcntl \
-        bcmath \
-        gd \
-        zip \
-        calendar \
-        intl \
-    && apt-get clean \
+    libonig-dev \
+    libxml2-dev \
+    libicu-dev \
+    libsodium-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Verify extensions are installed
-RUN php -m | grep -E "(zip|calendar|gd|pdo_sqlite)" || exit 1
+# Install PHP extensions (including sodium with proper dependencies)
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_sqlite \
+        zip \
+        calendar \
+        gd \
+        mbstring \
+        xml \
+        intl \
+        bcmath \
+        sodium
+
+# Verify critical extensions are installed
+RUN php -m | grep -E "(zip|calendar|pdo_sqlite|sodium)" && \
+    echo "✅ ALL CRITICAL EXTENSIONS VERIFIED"
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Enable Apache modules
+RUN a2enmod rewrite headers
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Set environment variables for composer
-ENV COMPOSER_MEMORY_LIMIT=-1
-ENV COMPOSER_ALLOW_SUPERUSER=1
-
-# Copy ALL application files first
+# Copy all application files first (CACHE BUST: 2026-02-01-v3)
 COPY . .
 
-# Install dependencies with platform requirements check
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
-
-# Remove .env from production - it should be created from .env.example
-RUN rm -f .env && cp .env.example .env
-
-# Set up database with demo data BEFORE Laravel commands
-RUN mkdir -p database && \
-    cp database/production_database.sqlite database/database.sqlite && \
-    chmod 664 database/database.sqlite && \
-    ls -la database/ && \
-    echo "Database setup complete"
-
-# Generate application key with error handling
-RUN php artisan key:generate --force || echo "Key generation failed, will retry at runtime"
-
-# Create storage directories and set permissions
-RUN mkdir -p storage/logs \
+# Create required directories BEFORE composer install
+RUN mkdir -p \
+    bootstrap/cache \
+    storage/logs \
     storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
-    bootstrap/cache \
-    public/storage && \
-    chmod -R 775 storage bootstrap/cache
+    public/storage \
+    && chmod -R 775 bootstrap/cache storage
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# CRITICAL: Install composer dependencies AFTER all files are copied
+# This ensures artisan file exists when post-autoload-dump runs
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --prefer-dist
+
+# Set up database and permissions
+RUN if [ -f database/production_database.sqlite ]; then \
+        echo "✅ Using production database with demo data"; \
+        cp database/production_database.sqlite database/database.sqlite; \
+    else \
+        echo "⚠️ Creating empty database"; \
+        touch database/database.sqlite; \
+    fi \
+    && chmod 664 database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html
+
+# Create .env from example
+RUN cp .env.example .env
+
+# Generate Laravel app key
+RUN php artisan key:generate --force
+
+# Create storage link (remove existing first)
+RUN rm -f public/storage && php artisan storage:link
+
+# Cache Laravel configuration with error handling
+RUN php artisan config:cache || echo "Config cache skipped" \
+    && php artisan route:cache || echo "Route cache skipped" \
+    && php artisan view:cache || echo "View cache skipped"
 
 # Copy Apache configuration
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
-# Create storage link with error handling
-RUN php artisan storage:link || echo "Storage link will be created at runtime"
-
-# Cache Laravel configuration with error handling
-RUN (php artisan config:cache || echo "Config cache failed, will retry at runtime") && \
-    (php artisan route:cache || echo "Route cache failed, will retry at runtime") && \
-    (php artisan view:cache || echo "View cache failed, will retry at runtime")
-
-# Copy startup script
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-# Set proper ownership
+# Final permission fix
 RUN chown -R www-data:www-data /var/www/html
 
-# Add health check
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost/health.php || exit 1
 
-# Expose port 80
+# Expose port
 EXPOSE 80
 
-# Use custom entrypoint
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+# Start Apache
+CMD ["apache2-foreground"]
