@@ -14,7 +14,7 @@ class StoreCompanyAccountService
         $accounts = DB::table('jb_companies_accounts')
             ->where('jb_companies_accounts.company_id', $company->getKey())
             ->join('jb_accounts', 'jb_accounts.id', '=', 'jb_companies_accounts.company_id')
-            ->select(DB::raw('CONCAT(jb_accounts.first_name, " ", jb_accounts.last_name) as name'))
+            ->select(DB::raw("jb_accounts.first_name || ' ' || jb_accounts.last_name as name"))
             ->pluck('name')
             ->all();
 
@@ -31,7 +31,7 @@ class StoreCompanyAccountService
                 }
 
                 $account = Account::query()
-                    ->where(DB::raw('CONCAT(jb_accounts.first_name, " ", jb_accounts.last_name)'), $accountName)
+                    ->where(DB::raw("jb_accounts.first_name || ' ' || jb_accounts.last_name"), $accountName)
                     ->first();
 
                 if (! empty($account)) {
