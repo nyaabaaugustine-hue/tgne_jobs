@@ -27,6 +27,8 @@ services:
         value: sqlite
       - key: DB_DATABASE
         value: /var/www/html/database/database.sqlite
+      - key: DB_FOREIGN_KEYS
+        value: true
       - key: CACHE_DRIVER
         value: file
       - key: CACHE_STORE
