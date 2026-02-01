@@ -3,6 +3,17 @@ set -e
 
 echo "=== JobBox Docker Startup ==="
 
+# Verify critical files exist
+if [ ! -f /var/www/html/composer.json ]; then
+    echo "❌ Critical error: composer.json not found"
+    exit 1
+fi
+
+if [ ! -f /var/www/html/database/production_database.sqlite ]; then
+    echo "❌ Critical error: production database not found"
+    exit 1
+fi
+
 # Ensure database exists
 if [ ! -f /var/www/html/database/database.sqlite ]; then
     echo "Restoring database from backup..."

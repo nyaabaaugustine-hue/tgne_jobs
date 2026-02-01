@@ -1,9 +1,95 @@
-.git
+# Ignore development files
 .env
-vendor
-node_modules
-tests
-storage/logs
-storage/framework/sessions
-storage/framework/views
-storage/framework/cache
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Ignore git
+.git
+.gitignore
+
+# Ignore node modules and build artifacts
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+storage/logs/*
+!storage/logs/.gitkeep
+
+# Ignore cache
+bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+
+# Ignore test files
+tests/
+phpunit.xml
+.phpunit.result.cache
+
+# Ignore documentation
+README.md
+*.md
+!DEPLOYMENT_GUIDE.md
+
+# Ignore deployment scripts (not needed in container)
+deploy*.sh
+test-*.sh
+verify-*.php
+create_*.php
+check_*.php
+debug_*.php
+fix_*.php
+update_*.php
+copy_*.php
+move_*.php
+list_*.php
+setup_*.php
+export_*.php
+download_*.php
+activate_*.php
+test_*.php
+
+# Ignore backup files
+*.backup
+*.bak
+*.tmp
+
+# Ignore Docker files (avoid recursion)
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Ignore render configs (not needed in container)
+render*.yaml
+northflank.json
+
+# Ignore import files
+*.csv
+*.sql
+*.json
+!composer.json
+!composer.lock
+
+# Ignore manual directories
+manual_images/
+images_jobs/
+deployment_images_backup/
+attached_assets/
+
+# Keep essential files
+!database/production_database.sqlite
+!database/database.sqlite
+!storage/*/
+!public/storage/

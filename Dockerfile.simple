@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
+    ca-certificates \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         pdo \
@@ -44,8 +45,8 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 # Copy composer files first for better caching
 COPY composer.json composer.lock ./
 
-# Copy platform directories needed for composer
-COPY platform/ ./platform/
+# Copy platform directories needed for composer (with error handling)
+COPY platform/ ./platform/ || echo "Platform directory copy failed"
 
 # Install dependencies (extensions are now available)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
@@ -53,16 +54,18 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # Copy rest of application files
 COPY . .
 
-# Create .env file from example if it doesn't exist
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
+# Remove .env from production - it should be created from .env.example
+RUN rm -f .env && cp .env.example .env
 
 # Set up database with demo data BEFORE Laravel commands
 RUN mkdir -p database && \
     cp database/production_database.sqlite database/database.sqlite && \
-    chmod 664 database/database.sqlite
+    chmod 664 database/database.sqlite && \
+    ls -la database/ && \
+    echo "Database setup complete"
 
-# Generate application key
-RUN php artisan key:generate --force
+# Generate application key with error handling
+RUN php artisan key:generate --force || echo "Key generation failed, will retry at runtime"
 
 # Create storage directories and set permissions
 RUN mkdir -p storage/logs \
@@ -96,7 +99,7 @@ RUN chown -R www-data:www-data /var/www/html
 
 # Add health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost/health || exit 1
+    CMD curl -f http://localhost/health.php || exit 1
 
 # Expose port 80
 EXPOSE 80

@@ -65,3 +65,5 @@ services:
         value: false
       - key: ADMIN_DIR
         value: admin
+      - key: IS_LOCALHOST
+        value: false
