@@ -29,6 +29,10 @@ services:
         value: file
       - key: QUEUE_CONNECTION
         value: sync
+      - key: BROADCAST_DRIVER
+        value: log
+      - key: FILESYSTEM_DISK
+        value: local
       - key: MAIL_MAILER
         value: smtp
       - key: MAIL_HOST
@@ -45,3 +49,5 @@ services:
         value: true
       - key: CMS_LICENSE_ACTIVATED
         value: true
+      - key: VITE_APP_NAME
+        value: JobBox

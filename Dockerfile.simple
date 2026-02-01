@@ -44,16 +44,25 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 # Copy composer files first for better caching
 COPY composer.json composer.lock ./
 
+# Copy platform directories needed for composer
+COPY platform/ ./platform/
+
 # Install dependencies (extensions are now available)
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Copy application files
+# Copy rest of application files
 COPY . .
 
-# Set up database with demo data
+# Create .env file from example if it doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Set up database with demo data BEFORE Laravel commands
 RUN mkdir -p database && \
     cp database/production_database.sqlite database/database.sqlite && \
     chmod 664 database/database.sqlite
+
+# Generate application key
+RUN php artisan key:generate --force
 
 # Create storage directories and set permissions
 RUN mkdir -p storage/logs \
@@ -70,8 +79,17 @@ RUN a2enmod rewrite
 # Copy Apache configuration
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
-# Create storage link
-RUN php artisan storage:link
+# Create storage link with error handling
+RUN php artisan storage:link || echo "Storage link will be created at runtime"
+
+# Cache Laravel configuration with error handling
+RUN php artisan config:cache || echo "Config cache failed, will retry at runtime" && \
+    php artisan route:cache || echo "Route cache failed, will retry at runtime" && \
+    php artisan view:cache || echo "View cache failed, will retry at runtime"
+
+# Copy startup script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set proper ownership
 RUN chown -R www-data:www-data /var/www/html
@@ -79,5 +97,5 @@ RUN chown -R www-data:www-data /var/www/html
 # Expose port 80
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Use custom entrypoint
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

@@ -1,30 +1,37 @@
 #!/bin/bash
 set -e
 
-echo "=== Starting docker-entrypoint.sh ==="
+echo "=== JobBox Docker Startup ==="
 
-# Setup permissions
-chown -R www-data:www-data /var/www/html
-chmod -R 755 storage bootstrap/cache database
-
-# Apache port config
-PORT=${PORT:-10000}
-sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf
-sed -i "s/:80>/:$PORT>/g" /etc/apache2/sites-available/000-default.conf
-sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf
-
-# Ensure SQLite database file exists and has proper permissions
-if [ ! -f database/database.sqlite ]; then
-  touch database/database.sqlite
-  chown www-data:www-data database/database.sqlite
-  chmod 664 database/database.sqlite
+# Ensure database exists
+if [ ! -f /var/www/html/database/database.sqlite ]; then
+    echo "Restoring database from backup..."
+    cp /var/www/html/database/production_database.sqlite /var/www/html/database/database.sqlite
+    chmod 664 /var/www/html/database/database.sqlite
 fi
 
-# Laravel caches
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-php artisan cache:clear
+# Ensure storage directories exist with proper permissions
+mkdir -p /var/www/html/storage/logs
+mkdir -p /var/www/html/storage/framework/cache
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/views
+mkdir -p /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Start Apache
+# Ensure storage link exists
+if [ ! -L /var/www/html/public/storage ]; then
+    echo "Creating storage link..."
+    php artisan storage:link
+fi
+
+# Cache configuration if not already cached
+if [ ! -f /var/www/html/bootstrap/cache/config.php ]; then
+    echo "Caching configuration..."
+    php artisan config:cache
+fi
+
+# Set proper ownership
+chown -R www-data:www-data /var/www/html
+
+echo "=== Starting Apache ==="
 exec apache2-foreground
