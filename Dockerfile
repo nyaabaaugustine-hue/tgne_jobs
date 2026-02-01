@@ -1,7 +1,8 @@
-# ULTRA BULLETPROOF JobBox Dockerfile - FINAL VERSION
+# BULLETPROOF JobBox Dockerfile - CACHE BUSTED v3.0
 FROM php:8.3-apache
 
-# Set environment variables
+# Force cache invalidation - Build timestamp: 2026-02-01-16:20
+ENV BUILD_TIMESTAMP=2026-02-01-16:20
 ENV DEBIAN_FRONTEND=noninteractive
 ENV COMPOSER_MEMORY_LIMIT=-1
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -51,10 +52,11 @@ RUN a2enmod rewrite headers
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy all application files first (Build: 2026-02-01-v2)
+# Copy all application files first (CACHE BUST: 2026-02-01-v3)
 COPY . .
 
-# Install composer dependencies after all files are copied
+# CRITICAL: Install composer dependencies AFTER all files are copied
+# This ensures artisan file exists when post-autoload-dump runs
 RUN composer install \
     --no-dev \
     --optimize-autoloader \

@@ -1,0 +1,4 @@
+BUILD_VERSION=2026-02-01-v3-FINAL
+COMMIT_HASH=0e3549e
+FIXES_APPLIED=PostgreSQL_compatibility,Docker_build_order,Composer_scripts
+EXPECTED_RESULT=Successful_deployment_with_demo_data
