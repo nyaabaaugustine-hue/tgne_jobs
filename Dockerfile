@@ -55,6 +55,16 @@ WORKDIR /var/www/html
 # Copy all application files first (CACHE BUST: 2026-02-01-v3)
 COPY . .
 
+# Create required directories BEFORE composer install
+RUN mkdir -p \
+    bootstrap/cache \
+    storage/logs \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    public/storage \
+    && chmod -R 775 bootstrap/cache storage
+
 # CRITICAL: Install composer dependencies AFTER all files are copied
 # This ensures artisan file exists when post-autoload-dump runs
 RUN composer install \
@@ -63,29 +73,19 @@ RUN composer install \
     --no-interaction \
     --prefer-dist
 
-# Ensure production database is copied
+# Set up database and permissions
 RUN if [ -f database/production_database.sqlite ]; then \
         echo "✅ Using production database with demo data"; \
         cp database/production_database.sqlite database/database.sqlite; \
     else \
         echo "⚠️ Creating empty database"; \
         touch database/database.sqlite; \
-    fi
+    fi \
+    && chmod 664 database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html
 
 # Create .env from example
 RUN cp .env.example .env
-
-# Set up directories and permissions
-RUN mkdir -p \
-    storage/logs \
-    storage/framework/cache \
-    storage/framework/sessions \
-    storage/framework/views \
-    bootstrap/cache \
-    public/storage \
-    && chmod 664 database/database.sqlite \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 storage bootstrap/cache
 
 # Generate Laravel app key
 RUN php artisan key:generate --force
