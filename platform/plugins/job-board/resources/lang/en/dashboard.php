@@ -130,4 +130,8 @@ return [
     'type' => 'Type',
     'cover_letter' => 'Cover letter',
     'employer_no_companies' => "You don't have any company yet. Please contact administrator to assign you a company.",
+    
+    // Dashboard widgets
+    'pending_applications_notice' => 'You have :count pending job applications that need review.',
+    'view_pending' => 'View Pending',
 ];

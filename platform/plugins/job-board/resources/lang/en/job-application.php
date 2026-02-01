@@ -34,4 +34,5 @@ return [
         'description' => 'You have a new job application from :name',
         'view' => 'View',
     ],
+    'view_all' => 'View All',
 ];

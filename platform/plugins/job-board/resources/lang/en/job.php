@@ -33,4 +33,5 @@ return [
     'tags' => 'Tags',
     'categories' => 'Categories',
     'write_some_tags' => 'Write some tags',
+    'view_all' => 'View All',
 ];

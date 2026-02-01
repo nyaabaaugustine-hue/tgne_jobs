@@ -79,15 +79,13 @@ RUN composer install \
     --no-interaction \
     --prefer-dist
 
-# Set up database
+# Set up database - Run migrations and seeders for PostgreSQL
 RUN if [ -f database/production_database.sqlite ]; then \
-        echo "✅ Using production database with demo data"; \
-        cp database/production_database.sqlite database/database.sqlite; \
+        echo "✅ SQLite demo data found, but using PostgreSQL in production"; \
+        echo "Database setup will be handled by migrations and seeders"; \
     else \
-        echo "⚠️ Creating empty database"; \
-        touch database/database.sqlite; \
-    fi \
-    && chmod 664 database/database.sqlite
+        echo "⚠️ No demo data found"; \
+    fi
 
 # Create .env from example
 RUN cp .env.example .env
@@ -98,8 +96,12 @@ RUN echo "=== INSTALLED PHP EXTENSIONS ===" && php -m | sort
 # Generate Laravel app key
 RUN php artisan key:generate --force
 
-# Create storage link
+# Create storage link and setup database
 RUN rm -rf public/storage && php artisan storage:link
+
+# Copy setup scripts and make startup script executable
+COPY setup_production_data.php check_database_data.php clear_all_caches.php startup.sh ./
+RUN chmod +x startup.sh
 
 # Copy Apache configuration
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
@@ -114,5 +116,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 # Expose port
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Start with startup script that handles database setup
+CMD ["./startup.sh"]
