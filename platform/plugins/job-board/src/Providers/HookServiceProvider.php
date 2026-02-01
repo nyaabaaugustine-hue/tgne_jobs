@@ -12,7 +12,8 @@ use Botble\Base\Facades\MetaBox;
 use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\Base\Models\BaseModel;
 use Botble\Base\Supports\TwigCompiler;
-use Botble\JobBoard\Enums\InvoiceStatusEnum;
+use Botble\Dashboard\Events\RenderingDashboardWidgets;
+use Botble\Dashboard\Supports\DashboardWidgetInstance;
 use Botble\JobBoard\Enums\JobApplicationStatusEnum;
 use Botble\JobBoard\Enums\ModerationStatusEnum;
 use Botble\JobBoard\Facades\JobBoardHelper;
@@ -439,6 +440,10 @@ class HookServiceProvider extends ServiceProvider
         $this->app['events']->listen(RenderingMenuOptions::class, function (): void {
             add_action(MENU_ACTION_SIDEBAR_OPTIONS, [$this, 'registerMenuOptions'], 2);
         });
+
+        $this->app['events']->listen(RenderingDashboardWidgets::class, function (): void {
+            add_filter(DASHBOARD_FILTER_ADMIN_LIST, [$this, 'registerDashboardWidgets'], 21, 2);
+        });
     }
 
     public function registerMenuOptions(): void
@@ -684,5 +689,21 @@ class HookServiceProvider extends ServiceProvider
         }
 
         return (float) format_price($amount * $currentCurrency->exchange_rate, $currentCurrency, true);
+    }
+
+    public function registerDashboardWidgets(array $widgets, $widgetSettings): array
+    {
+        if (! Auth::guard()->user()->hasPermission('jobs.index')) {
+            return $widgets;
+        }
+
+        $widgets[] = [
+            'type' => 'stats',
+            'view' => 'plugins/job-board::dashboard.widgets.stats',
+            'id' => 'widget_job_board_stats',
+            'priority' => 1,
+        ];
+
+        return $widgets;
     }
 }
