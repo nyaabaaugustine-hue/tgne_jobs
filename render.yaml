@@ -12,17 +12,17 @@ services:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
+        value: true
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        value: https://jobbox-app.onrender.com
+        value: https://tgne-jobs-yi40.onrender.com
       - key: APP_TIMEZONE
         value: UTC
       - key: LOG_CHANNEL
         value: stderr
       - key: LOG_LEVEL
-        value: error
+        value: debug
       - key: DB_CONNECTION
         value: sqlite
       - key: DB_DATABASE
