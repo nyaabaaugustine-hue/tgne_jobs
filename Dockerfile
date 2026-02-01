@@ -51,20 +51,15 @@ RUN a2enmod rewrite headers
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files and platform directory for dependencies
-COPY composer.json composer.lock ./
-COPY platform/ ./platform/
+# Copy all application files first
+COPY . .
 
-# Install composer dependencies first
+# Install composer dependencies after all files are copied
 RUN composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction \
-    --prefer-dist \
-    --no-scripts
-
-# Copy all remaining application files
-COPY . .
+    --prefer-dist
 
 # Ensure production database is copied
 RUN if [ -f database/production_database.sqlite ]; then \
@@ -89,9 +84,6 @@ RUN mkdir -p \
     && chmod 664 database/database.sqlite \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 775 storage bootstrap/cache
-
-# Run composer post-install scripts
-RUN composer run-script post-autoload-dump --no-interaction || echo "✅ Post-autoload completed"
 
 # Generate Laravel app key
 RUN php artisan key:generate --force
