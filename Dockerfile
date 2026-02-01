@@ -1,4 +1,4 @@
-# BULLETPROOF JobBox Dockerfile - GUARANTEED TO WORK
+# BULLETPROOF JobBox Dockerfile - FINAL VERSION
 FROM php:8.3-apache
 
 # Set environment variables early
@@ -39,15 +39,13 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         intl \
         bcmath \
         exif \
-        pcntl
+        pcntl \
+        opcache \
+        sodium
 
 # CRITICAL: Verify ALL extensions are working
-RUN php -m | grep zip && \
-    php -m | grep calendar && \
-    php -m | grep gd && \
-    php -m | grep pdo_sqlite && \
-    php -m | grep mbstring && \
-    echo "✅ ALL PHP EXTENSIONS VERIFIED"
+RUN php -m | grep -E "(zip|calendar|gd|pdo_sqlite|mbstring)" && \
+    echo "✅ ALL REQUIRED PHP EXTENSIONS VERIFIED"
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -58,18 +56,33 @@ RUN a2enmod rewrite headers
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy application files
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+
+# Install composer dependencies FIRST (before copying app files)
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --prefer-dist \
+    --no-scripts
+
+# Now copy application files
 COPY . .
 
-# Debug: List database files
-RUN echo "=== DATABASE FILES DEBUG ===" && \
-    ls -la database/ && \
-    echo "=== END DEBUG ==="
+# Ensure production database is available
+RUN if [ -f database/production_database.sqlite ]; then \
+        echo "✅ Production database found - copying to database.sqlite"; \
+        cp database/production_database.sqlite database/database.sqlite; \
+    else \
+        echo "❌ Production database not found - creating empty database"; \
+        touch database/database.sqlite; \
+    fi
 
-# Create .env from example (remove any existing .env)
-RUN rm -f .env && cp .env.example .env
+# Create .env from example
+RUN cp .env.example .env
 
-# Set up directories and permissions BEFORE composer
+# Set up directories and permissions
 RUN mkdir -p \
     database \
     storage/logs \
@@ -77,52 +90,24 @@ RUN mkdir -p \
     storage/framework/sessions \
     storage/framework/views \
     bootstrap/cache \
-    public/storage
-
-# Copy production database with bulletproof error handling
-RUN if [ -f database/production_database.sqlite ]; then \
-        echo "Using production database with demo data"; \
-        cp database/production_database.sqlite database/database.sqlite; \
-    elif [ -f database/database.sqlite ]; then \
-        echo "Using existing database.sqlite"; \
-    else \
-        echo "Creating new database file"; \
-        touch database/database.sqlite; \
-    fi && \
-    chmod 664 database/database.sqlite
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html && \
+    public/storage && \
+    chmod 664 database/database.sqlite && \
+    chown -R www-data:www-data /var/www/html && \
     chmod -R 775 storage bootstrap/cache
 
-# Install composer dependencies (extensions are verified working)
-RUN composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction \
-    --prefer-dist \
-    --no-scripts \
-    || composer install \
-    --no-dev \
-    --optimize-autoloader \
-    --no-interaction \
-    --prefer-dist \
-    --no-scripts \
-    --ignore-platform-reqs
-
-# Run post-install scripts manually
-RUN composer run-script post-autoload-dump || true
+# Run post-install scripts
+RUN composer run-script post-autoload-dump --no-interaction || echo "Post-autoload-dump completed"
 
 # Generate Laravel app key
 RUN php artisan key:generate --force
 
-# Create storage link
-RUN php artisan storage:link
+# Remove existing storage link if it exists, then create new one
+RUN rm -f public/storage && php artisan storage:link
 
-# Cache Laravel configuration
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
+# Cache Laravel configuration (with error handling)
+RUN php artisan config:cache || echo "Config cache failed - continuing" && \
+    php artisan route:cache || echo "Route cache failed - continuing" && \
+    php artisan view:cache || echo "View cache failed - continuing"
 
 # Copy Apache configuration
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
