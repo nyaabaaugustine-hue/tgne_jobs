@@ -1,4 +1,4 @@
-# ULTRA BULLETPROOF JobBox Dockerfile - GUARANTEED SUCCESS
+# ULTRA BULLETPROOF JobBox Dockerfile - FINAL VERSION
 FROM php:8.3-apache
 
 # Set environment variables
@@ -51,7 +51,7 @@ RUN a2enmod rewrite headers
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy all application files first
+# Copy all application files first (Build: 2026-02-01-v2)
 COPY . .
 
 # Install composer dependencies after all files are copied
