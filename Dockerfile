@@ -1,8 +1,8 @@
-# BULLETPROOF JobBox Dockerfile - FINAL WORKING VERSION
+# BULLETPROOF JobBox Dockerfile - FINAL WORKING VERSION v2
 FROM php:8.3-apache
 
-# Force complete cache invalidation
-ENV BUILD_ID=2026-02-01-FINAL
+# Force complete cache invalidation - Build: 2026-02-01-17:50
+ENV BUILD_ID=2026-02-01-FINAL-v2
 ENV DEBIAN_FRONTEND=noninteractive
 ENV COMPOSER_MEMORY_LIMIT=-1
 ENV COMPOSER_ALLOW_SUPERUSER=1
