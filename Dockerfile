@@ -87,10 +87,6 @@ RUN php artisan key:generate --force
 # Create storage link
 RUN rm -rf public/storage && php artisan storage:link
 
-# Cache Laravel configuration (skip route cache due to closures)
-RUN php artisan config:cache || echo "Config cache skipped" \
-    && php artisan view:cache || echo "View cache skipped"
-
 # Copy Apache configuration
 COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
