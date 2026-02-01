@@ -16,7 +16,7 @@ services:
       - key: APP_URL
         value: https://jobbox-simple.onrender.com
       - key: LOG_CHANNEL
-        value: errorlog
+        value: stderr
       - key: LOG_LEVEL
         value: error
       - key: DB_CONNECTION
@@ -24,6 +24,8 @@ services:
       - key: DB_DATABASE
         value: /var/www/html/database/database.sqlite
       - key: CACHE_DRIVER
+        value: file
+      - key: CACHE_STORE
         value: file
       - key: SESSION_DRIVER
         value: file
@@ -51,3 +53,15 @@ services:
         value: true
       - key: VITE_APP_NAME
         value: JobBox
+      - key: APP_TIMEZONE
+        value: UTC
+      - key: CMS_DISABLE_VERIFICATION
+        value: true
+      - key: CMS_DISABLE_UPDATE_CHECK
+        value: true
+      - key: CMS_DISABLE_WARNING_MESSAGES
+        value: true
+      - key: CMS_ENABLE_INSTALLER
+        value: false
+      - key: ADMIN_DIR
+        value: admin

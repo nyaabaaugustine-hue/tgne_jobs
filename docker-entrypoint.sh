@@ -21,13 +21,13 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 # Ensure storage link exists
 if [ ! -L /var/www/html/public/storage ]; then
     echo "Creating storage link..."
-    php artisan storage:link
+    php artisan storage:link || echo "Storage link creation failed, continuing..."
 fi
 
 # Cache configuration if not already cached
 if [ ! -f /var/www/html/bootstrap/cache/config.php ]; then
     echo "Caching configuration..."
-    php artisan config:cache
+    php artisan config:cache || echo "Config caching failed, continuing..."
 fi
 
 # Set proper ownership

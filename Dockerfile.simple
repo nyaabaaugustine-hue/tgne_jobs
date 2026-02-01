@@ -83,9 +83,9 @@ COPY .docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 RUN php artisan storage:link || echo "Storage link will be created at runtime"
 
 # Cache Laravel configuration with error handling
-RUN php artisan config:cache || echo "Config cache failed, will retry at runtime" && \
-    php artisan route:cache || echo "Route cache failed, will retry at runtime" && \
-    php artisan view:cache || echo "View cache failed, will retry at runtime"
+RUN (php artisan config:cache || echo "Config cache failed, will retry at runtime") && \
+    (php artisan route:cache || echo "Route cache failed, will retry at runtime") && \
+    (php artisan view:cache || echo "View cache failed, will retry at runtime")
 
 # Copy startup script
 COPY docker-entrypoint.sh /usr/local/bin/
@@ -93,6 +93,10 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set proper ownership
 RUN chown -R www-data:www-data /var/www/html
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost/health || exit 1
 
 # Expose port 80
 EXPOSE 80
