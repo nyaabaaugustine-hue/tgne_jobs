@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Callback Test</title>
+</head>
+<body>
+    <h1>OAuth Callback Parameters</h1>
+    <div id="results"></div>
+    
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        const oauthData = {
+            nonce: urlParams.get('nonce'),
+            challenge: urlParams.get('challenge'),
+            challenge_method: urlParams.get('challenge_method'),
+            redirect_uri: urlParams.get('redirect_uri'),
+            decoded_redirect_uri: decodeURIComponent(urlParams.get('redirect_uri') || '')
+        };
+        
+        // Display results
+        document.getElementById('results').innerHTML = `
+            <h2>Extracted OAuth Parameters:</h2>
+            <pre>${JSON.stringify(oauthData, null, 2)}</pre>
+            
+            <h2>Parameter Details:</h2>
+            <ul>
+                <li><strong>Nonce:</strong> ${oauthData.nonce}</li>
+                <li><strong>Challenge:</strong> ${oauthData.challenge}</li>
+                <li><strong>Challenge Method:</strong> ${oauthData.challenge_method}</li>
+                <li><strong>Redirect URI:</strong> ${oauthData.redirect_uri}</li>
+                <li><strong>Decoded Redirect URI:</strong> ${oauthData.decoded_redirect_uri}</li>
+            </ul>
+        `;
+        
+        // Log to console
+        console.log('OAuth Parameters:', oauthData);
+    </script>
+</body>
+</html>
