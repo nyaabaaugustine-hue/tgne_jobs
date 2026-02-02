@@ -8,13 +8,14 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2|^8.3",
+        "php": "^8.2|^8.3|^8.4",
+        "ext-calendar": "*",
         "ext-curl": "*",
         "ext-gd": "*",
         "ext-json": "*",
         "ext-pdo": "*",
+        "ext-sqlite3": "*",
         "ext-zip": "*",
-        "ext-calendar": "*",
         "botble/api": "^2.0.0",
         "botble/data-synchronize": "^1.0",
         "botble/get-started": "*@dev",
@@ -31,16 +32,15 @@
         "botble/slug": "*@dev",
         "botble/theme": "*@dev",
         "botble/widget": "*@dev",
+        "cloudinary/cloudinary_php": "^2.0",
         "doctrine/dbal": "^4.2",
         "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10",
+        "league/flysystem-aws-s3-v3": "^3.0",
         "predis/predis": "^2.3",
-        "wikimedia/composer-merge-plugin": "^2.1",
-        "ext-sqlite3": "*",
-        "cloudinary/cloudinary_php": "^2.0",
-        "league/flysystem-aws-s3-v3": "^3.0"
+        "wikimedia/composer-merge-plugin": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -106,6 +106,9 @@
             "composer/package-versions-deprecated": true,
             "pestphp/pest-plugin": true,
             "wikimedia/composer-merge-plugin": true
+        },
+        "platform": {
+            "php": "8.4.0"
         }
     },
     "minimum-stability": "dev",
