@@ -3,13 +3,8 @@ services:
     name: jobbox
     env: php
     plan: starter
-services:
-  - type: web
-    name: jobbox
-    env: php
-    plan: starter
     buildCommand: |
-      echo "=== JobBox Build with Demo Data Preservation ==="
+      echo "=== JobBox Build for PostgreSQL ==="
       
       # Set memory limit for composer
       export COMPOSER_MEMORY_LIMIT=-1
@@ -30,19 +25,6 @@ services:
       echo "Installing PHP dependencies..."
       composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
       
-      # Ensure database directory exists
-      echo "Setting up database..."
-      mkdir -p database
-      
-      # Copy production database if it doesn't exist
-      if [ ! -f database/database.sqlite ]; then
-        echo "Copying production database with demo data..."
-        cp database/production_database.sqlite database/database.sqlite
-      fi
-      
-      # Set database permissions
-      chmod 664 database/database.sqlite
-      
       # Create storage directories
       echo "Creating storage directories..."
       mkdir -p storage/logs
@@ -56,17 +38,17 @@ services:
       echo "Setting permissions..."
       chmod -R 775 storage bootstrap/cache
       
-      echo "=== Build completed with demo data preserved! ==="
+      echo "=== Build completed for PostgreSQL! ==="
       
     startCommand: |
-      echo "=== Starting JobBox with Demo Data ==="
+      echo "=== Starting JobBox with PostgreSQL ==="
       
-      # Ensure database exists with demo data
-      if [ ! -f database/database.sqlite ]; then
-        echo "Restoring demo database..."
-        cp database/production_database.sqlite database/database.sqlite
-        chmod 664 database/database.sqlite
-      fi
+      # Wait for PostgreSQL to be ready
+      echo "Waiting for PostgreSQL..."
+      until pg_isready -h $RENDER_EXTERNAL_HOSTNAME -p $RENDER_EXTERNAL_PORT -U $RENDER_EXTERNAL_USER; do
+        sleep 2
+      done
+      echo "PostgreSQL is ready!"
       
       # Ensure storage directories exist
       mkdir -p storage/logs
@@ -97,10 +79,18 @@ services:
       php artisan route:cache
       php artisan view:cache
       
-      # Verify demo data is present
-      echo "Verifying demo data..."
-      ACCOUNT_COUNT=$(php artisan tinker --execute="echo DB::table('jb_accounts')->count();" 2>/dev/null || echo "0")
-      echo "Starting with $ACCOUNT_COUNT demo accounts"
+      # Run migrations to set up database structure
+      echo "Running migrations..."
+      php artisan migrate --force
+      
+      # Seed database if empty
+      USER_COUNT=$(php artisan tinker --execute="echo DB::table('users')->count();" 2>/dev/null || echo "0")
+      if [ "$USER_COUNT" -eq "0" ]; then
+        echo "Seeding initial data..."
+        php artisan db:seed --class=ProductionDataSeeder --force
+      else
+        echo "Database already seeded with $USER_COUNT users"
+      fi
       
       # Start the application
       echo "Starting JobBox application on port $PORT..."
@@ -116,15 +106,15 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: APP_URL
-        value: https://jobbox.onrender.com
+        value: https://tgne-jobs-yi40.onrender.com
       - key: LOG_CHANNEL
         value: errorlog
       - key: LOG_LEVEL
         value: error
       - key: DB_CONNECTION
-        value: sqlite
+        value: pgsql
       - key: DB_DATABASE
-        value: /opt/render/project/src/database/database.sqlite
+        fromDatabaseUrl: true
       - key: CACHE_DRIVER
         value: file
       - key: SESSION_DRIVER
@@ -147,6 +137,14 @@ services:
         value: true
       - key: CMS_LICENSE_ACTIVATED
         value: true
+      - key: CLOUDINARY_URL
+        value: cloudinary://371426497434231:NqBnq7shwLOKDTGLcPTUg8BjKy4@daxrrb0nv
+      - key: CLOUDINARY_UPLOAD_PRESET
+        value: jobbox_upload
+      - key: FILESYSTEM_DISK
+        value: cloudinary
+      - key: MEDIA_DRIVER
+        value: cloudinary
       - key: COMPOSER_MEMORY_LIMIT
         value: -1
       - key: COMPOSER_ALLOW_SUPERUSER
