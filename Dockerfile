@@ -1,5 +1,5 @@
 # BULLETPROOF JobBox Dockerfile - FINAL WORKING VERSION v2
-FROM php:8.3-apache
+FROM php:8.4-apache
 
 # Force complete cache invalidation - Build: 2026-02-01-21:45-PGSQL-FINAL
 ENV BUILD_ID=2026-02-01-21:45-PGSQL-FINAL-v4

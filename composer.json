@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2|^8.3",
+        "php": "^8.2|^8.3|^8.4",
         "ext-calendar": "*",
         "ext-curl": "*",
         "ext-gd": "*",
@@ -114,7 +114,7 @@
             "wikimedia/composer-merge-plugin": true
         },
         "platform": {
-            "php": "8.3.30"
+            "php": "8.4.0"
         }
     },
     "minimum-stability": "dev",
