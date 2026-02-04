@@ -1,10 +1,3 @@
-databases:
-  - name: jobbox-db
-    databaseName: jobbox
-    user: jobbox
-    plan: starter
-    region: oregon
-
 services:
   - type: web
     name: jobbox-app
@@ -15,29 +8,17 @@ services:
     startCommand: echo "Docker CMD handles startup"
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: jobbox-db
-          property: connectionString
+        value: postgresql://tgne_jobs_user:XdzscXrqwHY7EQKzkd8OhHzMeHoNI83Q@dpg-d5tq7mili9vc73a0lhe0-a/tgne_jobs
       - key: DB_HOST
-        fromDatabase:
-          name: jobbox-db
-          property: host
+        value: dpg-d5tq7mili9vc73a0lhe0-a
       - key: DB_PORT
-        fromDatabase:
-          name: jobbox-db
-          property: port
+        value: 5432
       - key: DB_DATABASE
-        fromDatabase:
-          name: jobbox-db
-          property: database
+        value: tgne_jobs
       - key: DB_USERNAME
-        fromDatabase:
-          name: jobbox-db
-          property: user
+        value: tgne_jobs_user
       - key: DB_PASSWORD
-        fromDatabase:
-          name: jobbox-db
-          property: password
+        value: XdzscXrqwHY7EQKzkd8OhHzMeHoNI83Q
       - key: APP_NAME
         value: JobBox
       - key: APP_ENV
