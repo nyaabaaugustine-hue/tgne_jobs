@@ -7,6 +7,18 @@ services:
     buildCommand: echo "Docker build handles everything"
     startCommand: echo "Docker CMD handles startup"
     envVars:
+      - key: DATABASE_URL
+        value: postgresql://tgne_jobs_user:XdzscXrqwHY7EQKzkd8OhHzMeHoNI83Q@dpg-d5tq7mili9vc73a0lhe0-a/tgne_jobs
+      - key: DB_HOST
+        value: dpg-d5tq7mili9vc73a0lhe0-a
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: tgne_jobs
+      - key: DB_USERNAME
+        value: tgne_jobs_user
+      - key: DB_PASSWORD
+        value: XdzscXrqwHY7EQKzkd8OhHzMeHoNI83Q
       - key: APP_NAME
         value: JobBox
       - key: APP_ENV

@@ -24,8 +24,13 @@ class ProductionDataSeeder extends Seeder
             return;
         }
 
-        // Disable foreign key checks temporarily
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // Disable foreign key checks temporarily (database-agnostic)
+        $driver = DB::getDriverName();
+        if ($driver === 'mysql') {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        } elseif ($driver === 'pgsql') {
+            DB::statement('SET CONSTRAINTS ALL DEFERRED;');
+        }
         
         try {
             // Load the exported demo data
@@ -120,8 +125,13 @@ class ProductionDataSeeder extends Seeder
             $this->command->error('Error seeding demo data: ' . $e->getMessage());
             throw $e;
         } finally {
-            // Re-enable foreign key checks
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            // Re-enable foreign key checks (database-agnostic)
+            $driver = DB::getDriverName();
+            if ($driver === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            } elseif ($driver === 'pgsql') {
+                DB::statement('SET CONSTRAINTS ALL IMMEDIATE;');
+            }
         }
     }
     
