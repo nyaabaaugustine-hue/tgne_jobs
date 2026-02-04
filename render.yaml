@@ -1,3 +1,10 @@
+databases:
+  - name: jobbox-db
+    databaseName: jobbox
+    user: jobbox
+    plan: starter
+    region: oregon
+
 services:
   - type: web
     name: jobbox-app
@@ -7,6 +14,30 @@ services:
     buildCommand: echo "Docker build handles everything"
     startCommand: echo "Docker CMD handles startup"
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jobbox-db
+          property: connectionString
+      - key: DB_HOST
+        fromDatabase:
+          name: jobbox-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: jobbox-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: jobbox-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: jobbox-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: jobbox-db
+          property: password
       - key: APP_NAME
         value: JobBox
       - key: APP_ENV
